@@ -1,0 +1,34 @@
+version: "3"
+services:
+  tests: &tests
+    build: 
+      context: .
+      dockerfile: Dockerfile74
+    environment:
+      - TEST_STORAGE_API_URL
+      - TEST_STORAGE_API_TOKEN
+      # For Codeclimate
+      - CC_TEST_REPORTER_ID
+      - GIT_BRANCH
+      - GIT_COMMIT_SHA
+    command: ["composer", "ci"]
+
+  dev:
+    <<: *tests
+    volumes:
+      - ./:/code
+
+  tests56:
+    <<: *tests
+    build: 
+      context: .
+      dockerfile: Dockerfile56
+
+  tests74:
+    <<: *tests
+    build: 
+      context: .
+      dockerfile: Dockerfile74
+    command: ["/code/docker/tests-cc.sh"]
+    volumes:
+      - ./build/logs/:/code/build/logs/
