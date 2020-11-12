@@ -1,6 +1,5 @@
 version: "3"
 services:
-  # for development purposes
   tests: &tests
     build: 
       context: .
@@ -14,7 +13,7 @@ services:
       - GIT_COMMIT_SHA
     command: ["composer", "ci"]
 
-  tests-local:
+  dev:
     <<: *tests
     volumes:
       - ./:/code
