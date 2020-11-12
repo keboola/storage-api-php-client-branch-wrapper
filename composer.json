@@ -2,7 +2,7 @@
     "name": "keboola/storage-api-php-client-branch-wrapper",
     "license": "MIT",
     "type": "library",
-    "description": "Client for Azure Key Vault",
+    "description": "Wrapper for Storage API clients for Dev/Prod mode",
     "keywords": [
         "keboola",
         "storage api",
