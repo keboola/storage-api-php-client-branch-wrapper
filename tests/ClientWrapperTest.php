@@ -26,8 +26,9 @@ class ClientWrapperTest extends TestCase
         return new Client(
             [
                 'url' => getenv('TEST_STORAGE_API_URL'),
-                'token' => getenv('TEST_STORAGE_API_TOKEN')
+                'token' => getenv('TEST_STORAGE_API_TOKEN'),
             ]
+
         );
     }
 
@@ -73,5 +74,4 @@ class ClientWrapperTest extends TestCase
         self::assertSame($client, $clientWrapper->getBranchClient());
         self::assertTrue($clientWrapper->hasBranch());
     }
-
 }
