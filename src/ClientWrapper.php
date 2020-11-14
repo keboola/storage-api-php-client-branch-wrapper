@@ -16,9 +16,14 @@ class ClientWrapper
     /** @var BranchAwareClient */
     private $branchClient;
 
-    public function __construct(Client $storageClient)
+    /** @var \Closure */
+    private $pollDeloyFunction;
+
+    public function __construct(Client $storageClient, $pollDelayFunction, $logger)
     {
         $this->client = $storageClient;
+        $this->pollDeloyFunction = $pollDelayFunction;
+        $this->logger = $logger;
     }
 
     public function setBranch($branchId)
@@ -43,8 +48,15 @@ class ClientWrapper
                 [
                     'url' => $this->client->getApiUrl(),
                     'token' => $this->client->getTokenString(),
+                    'userAgent' => $this->client->getUserAgent(),
+                    'backoffMaxTries' => $this->client->getBackoffMaxTries(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'logger' => $this->logger,
                 ]
             );
+            if ($this->client->getRunId()) {
+                $this->branchClient->setRunId($this->client->getRunId());
+            }
         }
         return $this->branchClient;
     }
