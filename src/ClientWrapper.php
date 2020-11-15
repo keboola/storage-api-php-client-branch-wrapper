@@ -2,8 +2,10 @@
 
 namespace Keboola\StorageApiBranch;
 
+use Closure;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
+use Psr\Log\LoggerInterface;
 
 class ClientWrapper
 {
@@ -16,14 +18,18 @@ class ClientWrapper
     /** @var BranchAwareClient */
     private $branchClient;
 
-    /** @var \Closure */
-    private $pollDeloyFunction;
+    /** @var ?Closure */
+    private $pollDelayFunction;
 
-    public function __construct(Client $storageClient, $pollDelayFunction, $logger)
+    /** @var ?LoggerInterface */
+    private $logger;
+
+    public function __construct(Client $storageClient, $pollDelayFunction, $logger, $branchId = null)
     {
         $this->client = $storageClient;
-        $this->pollDeloyFunction = $pollDelayFunction;
+        $this->pollDelayFunction = $pollDelayFunction;
         $this->logger = $logger;
+        $this->branchId = $branchId;
     }
 
     public function setBranch($branchId)
@@ -50,7 +56,7 @@ class ClientWrapper
                     'token' => $this->client->getTokenString(),
                     'userAgent' => $this->client->getUserAgent(),
                     'backoffMaxTries' => $this->client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'jobPollRetryDelay' => $this->pollDelayFunction,
                     'logger' => $this->logger,
                 ]
             );
