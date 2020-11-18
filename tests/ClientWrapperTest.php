@@ -77,6 +77,16 @@ class ClientWrapperTest extends TestCase
         self::assertSame($client, $clientWrapper->getBranchClient());
         self::assertTrue($clientWrapper->hasBranch());
     }
+    
+    public function testSetBranchTwice()
+    {
+        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
+        $clientWrapper->setBranch('dev-123');
+        self::assertSame('dev-123', $clientWrapper->getBranch());
+        self::expectException(LogicException::class);
+        self::expectExceptionMessage('Branch can only be set once');
+        $clientWrapper->setBranch('dev-321');
+    }
 
     public function testCreateOptions()
     {
@@ -97,16 +107,6 @@ class ClientWrapperTest extends TestCase
         $reflection->setAccessible(true);
         self::assertEquals($logger, $reflection->getValue($branchClient));
         self::assertSame('branch123', $clientWrapper->getBranch());
-    }
-
-    public function testSetBranchTwice()
-    {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranch('dev-123');
-        self::assertSame('dev-123', $clientWrapper->getBranch());
-        self::expectException(LogicException::class);
-        self::expectExceptionMessage('Branch can only be set once');
-        $clientWrapper->setBranch('dev-321');
     }
 
     public function testCreateEmptyOptions()
