@@ -126,4 +126,3 @@ class ClientWrapperTest extends TestCase
         self::assertSame('branch123', $clientWrapper->getBranch());
     }
 }
-
