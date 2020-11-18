@@ -23,6 +23,9 @@ class ClientWrapper
 
     public function setBranch($branchId)
     {
+        if ($this->branchId !== null) {
+            throw new \LogicException('Branch can only be set once.');
+        }
         $this->branchId = $branchId;
     }
 
