@@ -5,6 +5,7 @@ namespace Keboola\StorageApiBranch;
 use Closure;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\DevBranches;
 use Psr\Log\LoggerInterface;
 
 class ClientWrapper
@@ -32,7 +33,7 @@ class ClientWrapper
         $this->branchId = $branchId;
     }
 
-    public function setBranch($branchId)
+    public function setBranchId($branchId)
     {
         if ($this->branchId !== null) {
             throw new \LogicException('Branch can only be set once.');
@@ -67,10 +68,21 @@ class ClientWrapper
         return $this->branchClient;
     }
 
-    public function getBranch()
+    public function getBranchId()
     {
         $this->validateSelf();
         return $this->branchId;
+    }
+
+    public function getBranchName()
+    {
+        $this->validateSelf();
+        if ($this->hasBranch()) {
+            $branches = new DevBranches($this->getBasicClient());
+            return $branches->getBranch($this->getBranchId())['name'];
+        } else {
+            return null;
+        }
     }
 
     public function hasBranch()
