@@ -4,10 +4,10 @@ namespace Keboola\StorageApiBranch\Tests;
 
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 use ReflectionProperty;
 
@@ -47,7 +47,7 @@ class ClientWrapperTest extends TestCase
         $clientWrapper = new ClientWrapper($this->getClient(), null, null);
         self::expectException(LogicException::class);
         self::expectExceptionMessage('Wrapper not initialized properly.');
-        $clientWrapper->getBranch();
+        $clientWrapper->getBranchId();
     }
 
     public function testIncompleteInitGetBranchClient()
@@ -61,17 +61,18 @@ class ClientWrapperTest extends TestCase
     public function testSetBranchNoBranch()
     {
         $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranch('');
-        self::assertSame('', $clientWrapper->getBranch());
+        $clientWrapper->setBranchId('');
+        self::assertSame('', $clientWrapper->getBranchId());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
         self::assertFalse($clientWrapper->hasBranch());
+        self::assertNull($clientWrapper->getBranchName());
     }
 
     public function testSetBranch()
     {
         $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranch('dev-123');
-        self::assertSame('dev-123', $clientWrapper->getBranch());
+        $clientWrapper->setBranchId('dev-123');
+        self::assertSame('dev-123', $clientWrapper->getBranchId());
         $client = $clientWrapper->getBranchClient();
         self::assertInstanceOf(BranchAwareClient::class, $client);
         self::assertSame($client, $clientWrapper->getBranchClient());
@@ -81,11 +82,11 @@ class ClientWrapperTest extends TestCase
     public function testSetBranchTwice()
     {
         $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranch('dev-123');
-        self::assertSame('dev-123', $clientWrapper->getBranch());
+        $clientWrapper->setBranchId('dev-123');
+        self::assertSame('dev-123', $clientWrapper->getBranchId());
         self::expectException(LogicException::class);
         self::expectExceptionMessage('Branch can only be set once');
-        $clientWrapper->setBranch('dev-321');
+        $clientWrapper->setBranchId('dev-321');
     }
 
     public function testCreateOptions()
@@ -106,7 +107,7 @@ class ClientWrapperTest extends TestCase
         $reflection = new ReflectionProperty(Client::class, 'logger');
         $reflection->setAccessible(true);
         self::assertEquals($logger, $reflection->getValue($branchClient));
-        self::assertSame('branch123', $clientWrapper->getBranch());
+        self::assertSame('branch123', $clientWrapper->getBranchId());
     }
 
     public function testCreateEmptyOptions()
@@ -123,6 +124,21 @@ class ClientWrapperTest extends TestCase
         $reflection = new ReflectionProperty(Client::class, 'logger');
         $reflection->setAccessible(true);
         self::assertNotNull($reflection->getValue($branchClient));
-        self::assertSame('branch123', $clientWrapper->getBranch());
+        self::assertSame('branch123', $clientWrapper->getBranchId());
+    }
+
+    public function testGetBranchName()
+    {
+        $branches = new DevBranches($this->getClient());
+        foreach ($branches->listBranches() as $branch) {
+            if ($branch['name'] === 'dev-123') {
+                $branches->deleteBranch($branch['id']);
+            }
+        }
+        $branchId = $branches->createBranch('dev-123')['id'];
+        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
+        $clientWrapper->setBranchId($branchId);
+        self::assertSame($branchId, $clientWrapper->getBranchId());
+        self::assertSame('dev-123', $clientWrapper->getBranchName());
     }
 }
