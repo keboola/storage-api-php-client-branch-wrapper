@@ -27,7 +27,9 @@
     },
     "require": {
         "php": ">=5.6",
-        "keboola/storage-api-client": "10.21",
+        "keboola/storage-api-client": "^11.2",
+
+
         "ext-json": "*"
     },
     "require-dev": {
