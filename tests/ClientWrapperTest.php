@@ -141,4 +141,20 @@ class ClientWrapperTest extends TestCase
         self::assertSame($branchId, $clientWrapper->getBranchId());
         self::assertSame('dev-123', $clientWrapper->getBranchName());
     }
+
+    public function testGetBranchClientIfAvailableWithNoBranchConfigured()
+    {
+        $client = $this->getClient();
+        $clientWrapper = new ClientWrapper($client, null, null, '');
+
+        self::assertSame($client, $clientWrapper->getBranchClientIfAvailable());
+    }
+
+    public function testGetBranchClientIfAvailableWithBranchConfigured()
+    {
+        $client = $this->getClient();
+        $clientWrapper = new ClientWrapper($client, null, null, 'test');
+
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
+    }
 }

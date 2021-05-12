@@ -68,6 +68,20 @@ class ClientWrapper
         return $this->branchClient;
     }
 
+    /**
+     * Returns branchClient if a branch was configured and basicClient otherwise.
+     *
+     * @return Client
+     */
+    public function getBranchClientIfAvailable()
+    {
+        if ($this->hasBranch()) {
+            return $this->getBranchClient();
+        }
+
+        return $this->getBasicClient();
+    }
+
     public function getBranchId()
     {
         $this->validateSelf();
