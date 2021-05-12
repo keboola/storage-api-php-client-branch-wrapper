@@ -1,4 +1,4 @@
-# Storage API PHP Client Branch Wrapper [![Build Status](https://dev.azure.com/keboola-dev/storage-api-php-client-branch-wrapper/_apis/build/status/keboola.storage-api-php-client-branch-wrapper?branchName=odin-PS-1166-b)](https://dev.azure.com/keboola-dev/storage-api-php-client-branch-wrapper/_build/latest?definitionId=52&branchName=odin-PS-1166-b)
+# Storage API PHP Client Branch Wrapper [![Build Status](https://dev.azure.com/keboola-dev/storage-api-php-client-branch-wrapper/_apis/build/status/keboola.storage-api-php-client-branch-wrapper?branchName=main)](https://dev.azure.com/keboola-dev/storage-api-php-client-branch-wrapper/_build/latest?definitionId=52&branchName=main)
 
 This is a wrapper for encapsulating Client and BranchAwareClient of [Storage API PHP Client](https://github.com/keboola/storage-api-php-client).
 
