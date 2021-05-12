@@ -61,8 +61,8 @@ class ClientWrapperTest extends TestCase
     public function testSetBranchNoBranch()
     {
         $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranchId('');
-        self::assertSame('', $clientWrapper->getBranchId());
+        $clientWrapper->setBranchId(ClientWrapper::BRANCH_MAIN);
+        self::assertSame(ClientWrapper::BRANCH_MAIN, $clientWrapper->getBranchId());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
         self::assertFalse($clientWrapper->hasBranch());
         self::assertNull($clientWrapper->getBranchName());
@@ -145,7 +145,7 @@ class ClientWrapperTest extends TestCase
     public function testGetBranchClientIfAvailableWithNoBranchConfigured()
     {
         $client = $this->getClient();
-        $clientWrapper = new ClientWrapper($client, null, null, '');
+        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
 
         self::assertSame($client, $clientWrapper->getBranchClientIfAvailable());
     }
