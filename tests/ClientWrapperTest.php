@@ -1,160 +1,94 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\StorageApiBranch\Tests;
 
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\Test\TestLogger;
-use ReflectionProperty;
 
 class ClientWrapperTest extends TestCase
 {
-    public function setUp()
+    public function testCreateBranch(): void
     {
-        parent::setUp();
-        $requiredEnvs = ['TEST_STORAGE_API_URL', 'TEST_STORAGE_API_TOKEN'];
-        foreach ($requiredEnvs as $env) {
-            if (empty($env)) {
-                throw new LogicException(sprintf('Required env "%s" is empty.', $env));
-            }
-        }
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+            '1234'
+        ));
+        self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
+        self::assertTrue($clientWrapper->hasBranch());
     }
 
-    private function getClient()
+    public function testCreateNoBranch(): void
     {
-        return new Client(
-            [
-                'url' => getenv('TEST_STORAGE_API_URL'),
-                'token' => getenv('TEST_STORAGE_API_TOKEN'),
-            ]
-
-        );
-    }
-
-    public function testCreate()
-    {
-        $client = $this->getClient();
-        $clientWrapper = new ClientWrapper($client, null, null);
-        self::assertSame($client, $clientWrapper->getBasicClient());
-    }
-
-    public function testIncompleteInitGetBranch()
-    {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        self::expectException(LogicException::class);
-        self::expectExceptionMessage('Wrapper not initialized properly.');
-        $clientWrapper->getBranchId();
-    }
-
-    public function testIncompleteInitGetBranchClient()
-    {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        self::expectException(LogicException::class);
-        self::expectExceptionMessage('Wrapper not initialized properly.');
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+            null
+        ));
+        self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
+        self::assertInstanceOf(Client::class, $clientWrapper->getBranchClientIfAvailable());
+        self::assertFalse($clientWrapper->hasBranch());
+        self::assertNull($clientWrapper->getBranchName());
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Branch is not set');
         $clientWrapper->getBranchClient();
     }
 
-    public function testSetBranchNoBranch()
+    public function testCreateDefaultBranch(): void
     {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranchId(ClientWrapper::BRANCH_MAIN);
-        self::assertSame(ClientWrapper::BRANCH_MAIN, $clientWrapper->getBranchId());
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+            ClientWrapper::BRANCH_DEFAULT
+        ));
+        self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        self::assertFalse($clientWrapper->hasBranch());
-        self::assertNull($clientWrapper->getBranchName());
-    }
-
-    public function testSetBranch()
-    {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranchId('dev-123');
-        self::assertSame('dev-123', $clientWrapper->getBranchId());
-        $client = $clientWrapper->getBranchClient();
-        self::assertInstanceOf(BranchAwareClient::class, $client);
-        self::assertSame($client, $clientWrapper->getBranchClient());
         self::assertTrue($clientWrapper->hasBranch());
     }
-    
-    public function testSetBranchTwice()
+
+    public function testGetClientOptions(): void
     {
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranchId('dev-123');
-        self::assertSame('dev-123', $clientWrapper->getBranchId());
-        self::expectException(LogicException::class);
-        self::expectExceptionMessage('Branch can only be set once');
-        $clientWrapper->setBranchId('dev-321');
+        $options = new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN')
+        );
+        $clientWrapper = new ClientWrapper($options);
+        self::assertSame(
+            getenv('TEST_STORAGE_API_URL'),
+            $clientWrapper->getClientOptionsReadOnly()->getUrl()
+        );
     }
 
-    public function testCreateOptions()
+    public function testGetBranchName(): void
     {
-        $client = $this->getClient();
-        $logger = new TestLogger();
-        $delayFunction = function () {
-            echo 'boo';
-        };
-        $clientWrapper = new ClientWrapper($client, $delayFunction, $logger, 'branch123');
-        self::assertSame($client, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        $branchClient = $clientWrapper->getBranchClient();
-        $reflection = new ReflectionProperty(Client::class, 'jobPollRetryDelay');
-        $reflection->setAccessible(true);
-        self::assertSame($delayFunction, $reflection->getValue($branchClient));
-        $branchClient = $clientWrapper->getBranchClient();
-        $reflection = new ReflectionProperty(Client::class, 'logger');
-        $reflection->setAccessible(true);
-        self::assertEquals($logger, $reflection->getValue($branchClient));
-        self::assertSame('branch123', $clientWrapper->getBranchId());
-    }
-
-    public function testCreateEmptyOptions()
-    {
-        $client = $this->getClient();
-        $clientWrapper = new ClientWrapper($client, null, null, 'branch123');
-        self::assertSame($client, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        $branchClient = $clientWrapper->getBranchClient();
-        $reflection = new ReflectionProperty(Client::class, 'jobPollRetryDelay');
-        $reflection->setAccessible(true);
-        self::assertNotNull($reflection->getValue($branchClient));
-        $branchClient = $clientWrapper->getBranchClient();
-        $reflection = new ReflectionProperty(Client::class, 'logger');
-        $reflection->setAccessible(true);
-        self::assertNotNull($reflection->getValue($branchClient));
-        self::assertSame('branch123', $clientWrapper->getBranchId());
-    }
-
-    public function testGetBranchName()
-    {
-        $branches = new DevBranches($this->getClient());
-        foreach ($branches->listBranches() as $branch) {
-            if ($branch['name'] === 'dev-123') {
-                $branches->deleteBranch($branch['id']);
-            }
+        $client = new Client(
+            [
+                'url' => (string) getenv('TEST_STORAGE_API_URL'),
+                'token' => (string) getenv('TEST_STORAGE_API_TOKEN'),
+            ]
+        );
+        $branchesApi = new DevBranches($client);
+        $branchId = (string) $branchesApi->createBranch('ClientWrapperTest::testGetBranchName')['id'];
+        try {
+            $clientWrapper = new ClientWrapper(new ClientOptions(
+                (string) getenv('TEST_STORAGE_API_URL'),
+                (string) getenv('TEST_STORAGE_API_TOKEN'),
+                $branchId
+            ));
+            self::assertSame($branchId, $clientWrapper->getBranchId());
+            self::assertSame('ClientWrapperTest::testGetBranchName', $clientWrapper->getBranchName());
+        } finally {
+            $branchesApi->deleteBranch((int) $branchId);
         }
-        $branchId = $branches->createBranch('dev-123')['id'];
-        $clientWrapper = new ClientWrapper($this->getClient(), null, null);
-        $clientWrapper->setBranchId($branchId);
-        self::assertSame($branchId, $clientWrapper->getBranchId());
-        self::assertSame('dev-123', $clientWrapper->getBranchName());
-    }
-
-    public function testGetBranchClientIfAvailableWithNoBranchConfigured()
-    {
-        $client = $this->getClient();
-        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
-
-        self::assertSame($client, $clientWrapper->getBranchClientIfAvailable());
-    }
-
-    public function testGetBranchClientIfAvailableWithBranchConfigured()
-    {
-        $client = $this->getClient();
-        $clientWrapper = new ClientWrapper($client, null, null, 'test');
-
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
     }
 }

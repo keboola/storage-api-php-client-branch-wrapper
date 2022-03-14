@@ -1,76 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\StorageApiBranch;
 
-use Closure;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
-use Psr\Log\LoggerInterface;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
+use LogicException;
 
 class ClientWrapper
 {
-    const BRANCH_UNINITIALIZED = null;
-    const BRANCH_MAIN = '';
+    public const BRANCH_DEFAULT = 'default';
 
-    /** @var Client */
-    private $client;
+    private ClientOptions $clientOptions;
+    private ?Client $client;
+    private ?BranchAwareClient $branchClient;
 
-    /** @var null|string */
-    private $branchId;
-
-    /** @var BranchAwareClient */
-    private $branchClient;
-
-    /** @var ?Closure */
-    private $pollDelayFunction;
-
-    /** @var ?LoggerInterface */
-    private $logger;
-
-    public function __construct(
-        Client $storageClient,
-        $pollDelayFunction,
-        $logger,
-        $branchId = self::BRANCH_UNINITIALIZED
-    ) {
-        $this->client = $storageClient;
-        $this->pollDelayFunction = $pollDelayFunction;
-        $this->logger = $logger;
-        $this->branchId = $branchId;
+    public function __construct(ClientOptions $clientOptions)
+    {
+        $this->clientOptions = $clientOptions;
     }
 
-    public function setBranchId($branchId)
+    public function getBasicClient(): Client
     {
-        if ($this->branchId !== self::BRANCH_UNINITIALIZED) {
-            throw new \LogicException('Branch can only be set once.');
+        if (empty($this->client)) {
+            $this->client = new Client($this->clientOptions->getClientConstructOptions());
+            $this->client->setRunId($this->clientOptions->getRunId());
         }
-        $this->branchId = $branchId;
-    }
-
-    public function getBasicClient()
-    {
         return $this->client;
     }
 
-    public function getBranchClient()
+    public function getBranchClient(): BranchAwareClient
     {
-        $this->validateSelf();
-        if (!$this->branchClient) {
+        if (!$this->hasBranch()) {
+            throw new LogicException('Branch is not set.');
+        }
+        if (empty($this->branchClient)) {
             $this->branchClient = new BranchAwareClient(
-                $this->branchId,
-                [
-                    'url' => $this->client->getApiUrl(),
-                    'token' => $this->client->getTokenString(),
-                    'userAgent' => $this->client->getUserAgent(),
-                    'backoffMaxTries' => $this->client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => $this->pollDelayFunction,
-                    'logger' => $this->logger,
-                ]
+                (string) $this->clientOptions->getBranchId(),
+                $this->clientOptions->getClientConstructOptions(),
             );
-            if ($this->client->getRunId()) {
-                $this->branchClient->setRunId($this->client->getRunId());
-            }
+            $this->branchClient->setRunId($this->clientOptions->getRunId());
         }
         return $this->branchClient;
     }
@@ -78,9 +50,9 @@ class ClientWrapper
     /**
      * Returns branchClient if a branch was configured and basicClient otherwise.
      *
-     * @return Client
+     * @return Client|BranchAwareClient
      */
-    public function getBranchClientIfAvailable()
+    public function getBranchClientIfAvailable(): Client
     {
         if ($this->hasBranch()) {
             return $this->getBranchClient();
@@ -89,33 +61,28 @@ class ClientWrapper
         return $this->getBasicClient();
     }
 
-    public function getBranchId()
+    public function getBranchId(): ?string
     {
-        $this->validateSelf();
-        return $this->branchId;
+        return $this->clientOptions->getBranchId();
     }
 
-    public function getBranchName()
+    public function getBranchName(): ?string
     {
-        $this->validateSelf();
         if ($this->hasBranch()) {
             $branches = new DevBranches($this->getBasicClient());
-            return $branches->getBranch($this->getBranchId())['name'];
+            return $branches->getBranch((int) $this->getBranchId())['name'];
         } else {
             return null;
         }
     }
 
-    public function hasBranch()
+    public function hasBranch(): bool
     {
-        $this->validateSelf();
-        return $this->branchId !== self::BRANCH_MAIN;
+        return $this->clientOptions->getBranchId() !== null;
     }
 
-    private function validateSelf()
+    public function getClientOptionsReadOnly(): ClientOptions
     {
-        if ($this->branchId === self::BRANCH_UNINITIALIZED) {
-            throw new \LogicException('Wrapper not initialized properly.');
-        }
+        return clone $this->clientOptions;
     }
 }
