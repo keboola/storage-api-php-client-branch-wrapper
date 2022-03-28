@@ -11,28 +11,15 @@ This is a wrapper for encapsulating Client and BranchAwareClient of [Storage API
 Create client instance and use it in wrapper instance:
 
 ```php 
-$client = Client(
-    [
-        'url' => 'XXXX',
-        'token' => 'XXXX',
-    ]
-);
+$client = ClientOptions('http://xxx.com', '1234-XXXX', '123');
 $clientWrapper = new ClientWrapper($client);
-$clietnWrapper->setBranch('dev-123');
 $branchClient = $clietnWrapper->getBranchClient();
 ```
-
-The `setBranch` method must always be called to initialize the wrapper.
-
 ## Development
 
 Create a test Keboola Connection project and set `TEST_STORAGE_API_URL` and `TEST_STORAGE_API_TOKEN` environment variables. Use the `.env.dist`
 file to create `.env` file.
 
 Run tests with:
-
-    docker-compose run --rm testsXX
-
-where XX is PHP version (56 or 74), e.g.:
 
     docker-compose run --rm tests74
