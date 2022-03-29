@@ -11,8 +11,8 @@ This is a wrapper for encapsulating Client and BranchAwareClient of [Storage API
 Create client instance and use it in wrapper instance:
 
 ```php 
-$client = ClientOptions('http://xxx.com', '1234-XXXX', '123');
-$clientWrapper = new ClientWrapper($client);
+$clientOptions = ClientOptions('http://xxx.com', '1234-XXXX', '123');
+$clientWrapper = new ClientWrapper($clientOptions);
 $branchClient = $clietnWrapper->getBranchClient();
 ```
 ## Development
