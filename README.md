@@ -28,3 +28,7 @@ file to create `.env` file.
 Run tests with:
 
     docker-compose run --rm tests74
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
