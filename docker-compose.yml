@@ -14,11 +14,11 @@ services:
     volumes:
       - ./:/code
 
-  tests74:
+  ci:
     <<: *tests
     build:
       context: .
-      dockerfile: Dockerfile74
+      dockerfile: Dockerfile
     command: ["composer", "ci"]
     volumes:
       - ./build/logs/:/code/build/logs/
