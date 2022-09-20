@@ -3,7 +3,7 @@ services:
   tests: &tests
     build:
       context: .
-      dockerfile: Dockerfile74
+      dockerfile: Dockerfile
     environment:
       - TEST_STORAGE_API_URL
       - TEST_STORAGE_API_TOKEN
