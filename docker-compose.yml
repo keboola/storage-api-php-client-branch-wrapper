@@ -1,6 +1,6 @@
 version: "3"
 services:
-  tests: &tests
+  ci: &ci
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,15 +10,6 @@ services:
     command: ["composer", "ci"]
 
   dev:
-    <<: *tests
+    <<: *ci
     volumes:
       - ./:/code
-
-  ci:
-    <<: *tests
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["composer", "ci"]
-    volumes:
-      - ./build/logs/:/code/build/logs/
