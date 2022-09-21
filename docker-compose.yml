@@ -1,24 +1,15 @@
 version: "3"
 services:
-  tests: &tests
+  ci: &ci
     build:
       context: .
-      dockerfile: Dockerfile74
+      dockerfile: Dockerfile
     environment:
       - TEST_STORAGE_API_URL
       - TEST_STORAGE_API_TOKEN
     command: ["composer", "ci"]
 
   dev:
-    <<: *tests
+    <<: *ci
     volumes:
       - ./:/code
-
-  tests74:
-    <<: *tests
-    build:
-      context: .
-      dockerfile: Dockerfile74
-    command: ["composer", "ci"]
-    volumes:
-      - ./build/logs/:/code/build/logs/
