@@ -20,7 +20,7 @@ class ClientOptionsTest extends TestCase
             return 'boo' . $clientOptions->getToken();
         };
         $logger = new NullLogger();
-        $backendConfiguration = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions(
             'http://dummy',
             'token',
@@ -58,7 +58,7 @@ class ClientOptionsTest extends TestCase
         $runIdFunction = function () {
         };
         $logger = new NullLogger();
-        $backendConfiguration = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions();
 
         self::assertSame(null, $clientOptions->getUrl());
@@ -121,13 +121,13 @@ class ClientOptionsTest extends TestCase
         };
         $runIdFunction = function () {
         };
-        $backendConfiguration = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $logger = new NullLogger();
         $retryFunction2 = function () {
         };
         $runIdFunction2 = function () {
         };
-        $backendConfiguration2 = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration2 = new BackendConfiguration('123-transformation', 'small');
         $clientOptions1 = new ClientOptions(
             'http://dummy',
             'token',
@@ -206,7 +206,7 @@ class ClientOptionsTest extends TestCase
         $runIdFunction = function () {
         };
         $logger = new NullLogger();
-        $backendConfiguration = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions(
             'http://dummy',
             'token',

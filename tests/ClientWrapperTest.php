@@ -95,7 +95,7 @@ class ClientWrapperTest extends TestCase
 
     public function testClientsAreProperlyConfigured(): void
     {
-        $backendConfiguration = new BackendConfiguration('123-transfomration', 'small');
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
 
         $clientOptionsMock = $this->createMock(ClientOptions::class);
         $clientOptionsMock->expects(self::exactly(2))
