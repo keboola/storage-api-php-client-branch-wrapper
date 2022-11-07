@@ -7,6 +7,7 @@ namespace Keboola\StorageApiBranch\Tests;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
+use Keboola\StorageApi\Options\BackendConfiguration;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use LogicException;
@@ -90,5 +91,48 @@ class ClientWrapperTest extends TestCase
         } finally {
             $branchesApi->deleteBranch((int) $branchId);
         }
+    }
+
+    public function testClientsAreProperlyConfigured(): void
+    {
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
+
+        $clientOptionsMock = $this->createMock(ClientOptions::class);
+        $clientOptionsMock->expects(self::exactly(2))
+            ->method('getClientConstructOptions')
+            ->willReturn([
+                'url' => 'dummy',
+                'token' => 'dummy-token',
+            ]);
+
+        $clientOptionsMock->expects(self::exactly(2))
+            ->method('getRunId')
+            ->willReturn('124');
+
+        $clientOptionsMock->expects(self::exactly(2))
+            ->method('getBackendConfiguration')
+            ->willReturn($backendConfiguration);
+
+        $clientOptionsMock->expects(self::exactly(3))
+            ->method('getBranchId')
+            ->willReturn('dummy-branch');
+
+        $clientWrapper = new ClientWrapper($clientOptionsMock);
+
+        $basicClient = $clientWrapper->getBasicClient();
+        self::assertInstanceOf(Client::class, $basicClient);
+        self::assertSame('dummy', $basicClient->getApiUrl());
+        self::assertSame('dummy-token', $basicClient->getTokenString());
+        self::assertSame('124', $basicClient->getRunId());
+        self::assertSame($backendConfiguration, $basicClient->getBackendConfiguration());
+        self::assertSame($basicClient, $clientWrapper->getBasicClient());
+
+        $branchClient = $clientWrapper->getBranchClient();
+        self::assertInstanceOf(BranchAwareClient::class, $branchClient);
+        self::assertSame('dummy', $branchClient->getApiUrl());
+        self::assertSame('dummy-token', $branchClient->getTokenString());
+        self::assertSame('124', $branchClient->getRunId());
+        self::assertSame($backendConfiguration, $branchClient->getBackendConfiguration());
+        self::assertSame($branchClient, $clientWrapper->getBranchClient());
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Options\BackendConfiguration;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -19,6 +20,7 @@ class ClientOptionsTest extends TestCase
             return 'boo' . $clientOptions->getToken();
         };
         $logger = new NullLogger();
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions(
             'http://dummy',
             'token',
@@ -30,7 +32,8 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdGenerator
+            $runIdGenerator,
+            $backendConfiguration
         );
 
         self::assertSame('http://dummy', $clientOptions->getUrl());
@@ -45,6 +48,7 @@ class ClientOptionsTest extends TestCase
         self::assertSame($retryFunction, $clientOptions->getJobPollRetryDelay());
         self::assertSame($runIdGenerator, $clientOptions->getRunIdGenerator());
         self::assertSame('bootoken', $clientOptions->getRunIdGenerator()($clientOptions));
+        self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
     }
 
     public function testAccessors(): void
@@ -54,6 +58,7 @@ class ClientOptionsTest extends TestCase
         $runIdFunction = function () {
         };
         $logger = new NullLogger();
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions();
 
         self::assertSame(null, $clientOptions->getUrl());
@@ -66,6 +71,7 @@ class ClientOptionsTest extends TestCase
         self::assertSame(null, $clientOptions->getAwsRetries());
         self::assertSame(null, $clientOptions->getAwsDebug());
         self::assertSame(null, $clientOptions->getJobPollRetryDelay());
+        self::assertSame(null, $clientOptions->getBackendConfiguration());
 
         $clientOptions->setUrl('http://dummy');
         $clientOptions->setToken('token');
@@ -78,6 +84,7 @@ class ClientOptionsTest extends TestCase
         $clientOptions->setAwsDebug(false);
         $clientOptions->setJobPollRetryDelay($retryFunction);
         $clientOptions->setRunIdGenerator($runIdFunction);
+        $clientOptions->setBackendConfiguration($backendConfiguration);
 
         self::assertSame('http://dummy', $clientOptions->getUrl());
         self::assertSame('token', $clientOptions->getToken());
@@ -90,6 +97,7 @@ class ClientOptionsTest extends TestCase
         self::assertSame(false, $clientOptions->getAwsDebug());
         self::assertEquals($retryFunction, $clientOptions->getJobPollRetryDelay());
         self::assertSame($runIdFunction, $clientOptions->getRunIdGenerator());
+        self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
     }
 
     public function testSetInvalidUrl(): void
@@ -113,7 +121,13 @@ class ClientOptionsTest extends TestCase
         };
         $runIdFunction = function () {
         };
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $logger = new NullLogger();
+        $retryFunction2 = function () {
+        };
+        $runIdFunction2 = function () {
+        };
+        $backendConfiguration2 = new BackendConfiguration('123-transformation', 'small');
         $clientOptions1 = new ClientOptions(
             'http://dummy',
             'token',
@@ -125,7 +139,8 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdFunction
+            $runIdFunction,
+            $backendConfiguration
         );
         $clientOptions2 = new ClientOptions(
             'http://dummy2',
@@ -137,7 +152,9 @@ class ClientOptionsTest extends TestCase
             422,
             242,
             true,
-            $retryFunction
+            $retryFunction2,
+            $runIdFunction2,
+            $backendConfiguration2
         );
         $clientOptions1->addValuesFrom($clientOptions2);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
@@ -149,10 +166,12 @@ class ClientOptionsTest extends TestCase
         self::assertSame(422, $clientOptions1->getBackoffMaxTries());
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
-        self::assertSame($retryFunction, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction, $clientOptions1->getRunIdGenerator());
+        self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
+        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
+        self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
 
         $clientOptions3 = new ClientOptions(
+            null,
             null,
             null,
             null,
@@ -175,15 +194,19 @@ class ClientOptionsTest extends TestCase
         self::assertSame(422, $clientOptions1->getBackoffMaxTries());
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
-        self::assertSame($retryFunction, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction, $clientOptions1->getRunIdGenerator());
+        self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
+        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
+        self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
     }
 
     public function testGetClientConstructOptions(): void
     {
         $retryFunction = function () {
         };
+        $runIdFunction = function () {
+        };
         $logger = new NullLogger();
+        $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions(
             'http://dummy',
             'token',
@@ -194,7 +217,9 @@ class ClientOptionsTest extends TestCase
             42,
             24,
             false,
-            $retryFunction
+            $retryFunction,
+            $runIdFunction,
+            $backendConfiguration
         );
         self::assertEquals(
             [

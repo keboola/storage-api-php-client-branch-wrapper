@@ -28,6 +28,7 @@ class ClientWrapper
         if (empty($this->client)) {
             $this->client = new Client($this->clientOptions->getClientConstructOptions());
             $this->client->setRunId($this->clientOptions->getRunId());
+            $this->client->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
         }
         return $this->client;
     }
@@ -43,6 +44,7 @@ class ClientWrapper
                 $this->clientOptions->getClientConstructOptions(),
             );
             $this->branchClient->setRunId($this->clientOptions->getRunId());
+            $this->branchClient->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
         }
         return $this->branchClient;
     }

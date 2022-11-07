@@ -6,6 +6,7 @@ namespace Keboola\StorageApiBranch\Factory;
 
 use Closure;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\Validator\Validation;
@@ -23,6 +24,7 @@ class ClientOptions
     private ?bool $awsDebug;
     private ?Closure $jobPollRetryDelay;
     private ?Closure $runIdGenerator;
+    private ?BackendConfiguration $backendConfiguration;
 
     public function getClientConstructOptions(): array
     {
@@ -49,7 +51,8 @@ class ClientOptions
         ?int $awsRetries = null,
         ?bool $awsDebug = null,
         ?Closure $jobPollRetryDelay = null,
-        ?Closure $runIdGenerator = null
+        ?Closure $runIdGenerator = null,
+        ?BackendConfiguration $backendConfiguration = null
     ) {
         $this->setUrl($url);
         $this->setToken($token);
@@ -62,6 +65,7 @@ class ClientOptions
         $this->setAwsDebug($awsDebug);
         $this->setJobPollRetryDelay($jobPollRetryDelay);
         $this->setRunIdGenerator($runIdGenerator);
+        $this->setBackendConfiguration($backendConfiguration);
     }
 
     public function addValuesFrom(ClientOptions $clientOptions): void
@@ -77,6 +81,7 @@ class ClientOptions
         $this->awsDebug = $clientOptions->getAwsDebug() ?? $this->awsDebug;
         $this->jobPollRetryDelay = $clientOptions->getJobPollRetryDelay() ?? $this->jobPollRetryDelay;
         $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
+        $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
     }
 
     public function setUrl(?string $url): ClientOptions
@@ -207,5 +212,16 @@ class ClientOptions
     public function getRunIdGenerator(): ?Closure
     {
         return $this->runIdGenerator;
+    }
+
+    public function setBackendConfiguration(?BackendConfiguration $backendConfiguration): ClientOptions
+    {
+        $this->backendConfiguration = $backendConfiguration;
+        return $this;
+    }
+
+    public function getBackendConfiguration(): ?BackendConfiguration
+    {
+        return $this->backendConfiguration;
     }
 }
