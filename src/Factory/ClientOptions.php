@@ -25,6 +25,7 @@ class ClientOptions
     private ?Closure $jobPollRetryDelay;
     private ?Closure $runIdGenerator;
     private ?BackendConfiguration $backendConfiguration;
+    private ?bool $useBranchStorage;
 
     public function getClientConstructOptions(): array
     {
@@ -52,7 +53,8 @@ class ClientOptions
         ?bool $awsDebug = null,
         ?Closure $jobPollRetryDelay = null,
         ?Closure $runIdGenerator = null,
-        ?BackendConfiguration $backendConfiguration = null
+        ?BackendConfiguration $backendConfiguration = null,
+        ?bool $useBranchStorage = null
     ) {
         $this->setUrl($url);
         $this->setToken($token);
@@ -66,6 +68,7 @@ class ClientOptions
         $this->setJobPollRetryDelay($jobPollRetryDelay);
         $this->setRunIdGenerator($runIdGenerator);
         $this->setBackendConfiguration($backendConfiguration);
+        $this->setUseBranchStorage($useBranchStorage);
     }
 
     public function addValuesFrom(ClientOptions $clientOptions): void
@@ -82,6 +85,7 @@ class ClientOptions
         $this->jobPollRetryDelay = $clientOptions->getJobPollRetryDelay() ?? $this->jobPollRetryDelay;
         $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
         $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
+        $this->useBranchStorage = $clientOptions->useBranchStorage() ?? $this->useBranchStorage;
     }
 
     public function setUrl(?string $url): ClientOptions
@@ -223,5 +227,16 @@ class ClientOptions
     public function getBackendConfiguration(): ?BackendConfiguration
     {
         return $this->backendConfiguration;
+    }
+
+    public function setUseBranchStorage(?bool $useBranchStorage): ClientOptions
+    {
+        $this->useBranchStorage = $useBranchStorage;
+        return $this;
+    }
+
+    public function useBranchStorage(): ?bool
+    {
+        return $this->useBranchStorage;
     }
 }

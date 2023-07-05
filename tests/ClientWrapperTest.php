@@ -135,4 +135,55 @@ class ClientWrapperTest extends TestCase
         self::assertSame($backendConfiguration, $branchClient->getBackendConfiguration());
         self::assertSame($branchClient, $clientWrapper->getBranchClient());
     }
+
+    /**
+     * @dataProvider useBranchStorageDataProvider
+     */
+    public function testCreateBranchStorage(?bool $useBranchStorage, string $expectedClassName): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: (string) getenv('TEST_STORAGE_API_URL'),
+            token: (string) getenv('TEST_STORAGE_API_TOKEN'),
+            branchId: ClientWrapper::BRANCH_DEFAULT,
+            useBranchStorage: false,
+        ));
+        self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
+        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
+        self::assertInstanceOf(Client::class, $clientWrapper->getTableStorageClient());
+        self::assertTrue($clientWrapper->hasBranch());
+    }
+
+    public function useBranchStorageDataProvider()
+    {
+        yield 'useBranchStorage is null' => [
+            'useBranchStorage' => null,
+            'expectedClassName' => Client::class,
+        ];
+        yield 'useBranchStorage is true' => [
+            'useBranchStorage' => true,
+            'expectedClassName' => BranchAwareClient::class,
+        ];
+        yield 'useBranchStorage is false' => [
+            'useBranchStorage' => false,
+            'expectedClassName' => Client::class,
+        ];
+    }
+
+    public function testCreateBranchStorageClientNoBranch(): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: (string) getenv('TEST_STORAGE_API_URL'),
+            token: (string) getenv('TEST_STORAGE_API_TOKEN'),
+            branchId: null,
+            useBranchStorage: true,
+        ));
+        self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
+        self::assertInstanceOf(Client::class, $clientWrapper->getBranchClientIfAvailable());
+        self::assertFalse($clientWrapper->hasBranch());
+        self::assertNull($clientWrapper->getBranchName());
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Branch is not set');
+        $clientWrapper->getTableStorageClient();
+    }
 }

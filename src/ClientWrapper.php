@@ -50,9 +50,23 @@ class ClientWrapper
     }
 
     /**
+     * Returns branchClient if useBranchStorage flag is configured
+     *
+     * @return Client|BranchAwareClient
+     */
+    public function getTableStorageClient(): Client
+    {
+        if ($this->clientOptions->useBranchStorage()) {
+            return $this->getBranchClient();
+        }
+        return $this->getBasicClient();
+    }
+
+    /**
      * Returns branchClient if a branch was configured and basicClient otherwise.
      *
      * @return Client|BranchAwareClient
+     * @deprecated Use getBranchClient for all endpoints that support branches.
      */
     public function getBranchClientIfAvailable(): Client
     {
