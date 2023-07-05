@@ -150,7 +150,7 @@ class ClientWrapperTest extends TestCase
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        self::assertInstanceOf(Client::class, $clientWrapper->getTableStorageClient());
+        self::assertInstanceOf(Client::class, $clientWrapper->getTableAndFileStorageClient());
         self::assertTrue($clientWrapper->hasBranch());
     }
 
@@ -184,6 +184,6 @@ class ClientWrapperTest extends TestCase
         self::assertNull($clientWrapper->getBranchName());
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Branch is not set');
-        $clientWrapper->getTableStorageClient();
+        $clientWrapper->getTableAndFileStorageClient();
     }
 }

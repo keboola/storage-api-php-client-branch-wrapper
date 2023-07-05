@@ -54,7 +54,7 @@ class ClientWrapper
      *
      * @return Client|BranchAwareClient
      */
-    public function getTableStorageClient(): Client
+    public function getTableAndFileStorageClient(): Client
     {
         if ($this->clientOptions->useBranchStorage()) {
             return $this->getBranchClient();
