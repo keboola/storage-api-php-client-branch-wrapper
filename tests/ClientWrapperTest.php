@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests;
 
+use Generator;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
@@ -154,7 +155,7 @@ class ClientWrapperTest extends TestCase
         self::assertTrue($clientWrapper->hasBranch());
     }
 
-    public function useBranchStorageDataProvider()
+    public function useBranchStorageDataProvider(): Generator
     {
         yield 'useBranchStorage is null' => [
             'useBranchStorage' => null,
