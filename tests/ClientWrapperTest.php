@@ -146,12 +146,12 @@ class ClientWrapperTest extends TestCase
             url: (string) getenv('TEST_STORAGE_API_URL'),
             token: (string) getenv('TEST_STORAGE_API_TOKEN'),
             branchId: ClientWrapper::BRANCH_DEFAULT,
-            useBranchStorage: false,
+            useBranchStorage: $useBranchStorage,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        self::assertInstanceOf(Client::class, $clientWrapper->getTableAndFileStorageClient());
+        self::assertInstanceOf($expectedClassName, $clientWrapper->getTableAndFileStorageClient());
         self::assertTrue($clientWrapper->hasBranch());
     }
 
