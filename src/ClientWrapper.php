@@ -20,6 +20,8 @@ class ClientWrapper
     private ?bool $isDefaultBranch = null;
     private string $branchId;
     private string $branchName;
+    private string $defaultBranchId;
+    private string $defaultBranchName;
 
     public function __construct(ClientOptions $clientOptions)
     {
@@ -102,6 +104,17 @@ class ClientWrapper
         return (bool) $this->isDefaultBranch;
     }
 
+    public function getDefaultBranch(): array
+    {
+        $this->resolveBranchId();
+
+        return [
+            'branchId' => $this->defaultBranchId,
+            'branchName' => $this->defaultBranchName,
+            'isDefault' => true,
+        ];
+    }
+
     public function getClientOptionsReadOnly(): ClientOptions
     {
         return clone $this->clientOptions;
@@ -115,25 +128,28 @@ class ClientWrapper
 
         $branchesApiClient = new DevBranches($this->getBasicClient());
         $branchId = $this->clientOptions->getBranchId();
-        if ($branchId === null || $branchId === 'default') {
-            foreach ($branchesApiClient->listBranches() as $branch) {
-                if ($branch['isDefault']) {
-                    $this->branchId = (string) $branch['id'];
-                    $this->isDefaultBranch = true;
-                    $this->branchName = (string) $branch['name'];
-                    return;
-                }
-            }
-        }
 
         foreach ($branchesApiClient->listBranches() as $branch) {
+            if ($branch['isDefault']) {
+                $this->defaultBranchId = (string) $branch['id'];
+                $this->defaultBranchName = (string) $branch['name'];
+
+                if ($branchId === null || $branchId === 'default') {
+                    $this->isDefaultBranch = true;
+                    $this->branchId = (string) $branch['id'];
+                    $this->branchName = (string) $branch['name'];
+                }
+            }
+
             if ($branchId === (string) $branch['id']) {
                 $this->isDefaultBranch = $branch['isDefault'];
                 $this->branchName = (string) $branch['name'];
                 $this->branchId = (string) $branch['id'];
-                return;
             }
         }
-        throw new ClientException(sprintf('Can\'t resolve branchId: "%s".', $branchId));
+
+        if ($this->isDefaultBranch === null) {
+            throw new ClientException(sprintf('Can\'t resolve branchId: "%s".', $branchId));
+        }
     }
 }

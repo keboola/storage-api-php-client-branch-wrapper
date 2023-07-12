@@ -245,4 +245,60 @@ class ClientWrapperTest extends TestCase
         self::assertSame('Main', $clientWrapper->getBranchName());
         self::assertInstanceOf(Client::class, $clientWrapper->getTableAndFileStorageClient());
     }
+
+    public function testGetDefaultBranch(): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: (string) getenv('TEST_STORAGE_API_URL'),
+            token: (string) getenv('TEST_STORAGE_API_TOKEN'),
+            branchId: null,
+            useBranchStorage: true,
+        ));
+
+        self::assertIsScalar($clientWrapper->getDefaultBranch()['branchId']);
+        self::assertSame('Main', $clientWrapper->getDefaultBranch()['branchName']);
+        self::assertTrue($clientWrapper->getDefaultBranch()['isDefault']);
+    }
+
+    public function testGetDefaultBranchIsCached(): void
+    {
+        $storageClient = $this->createMock(Client::class);
+        $storageClient
+            ->expects(self::once()) // this is important, list branches must be only called once
+            ->method('apiGet')
+            ->with('dev-branches/')
+            ->willReturn([
+                [
+                    'id' => '123',
+                    'name' => 'Main',
+                    'isDefault' => true,
+                ],
+                [
+                    'id' => '124',
+                    'name' => 'Dev',
+                    'isDefault' => false,
+                ],
+            ]);
+
+        $clientWrapper = $this->getMockBuilder(ClientWrapper::class)
+            ->setConstructorArgs([
+                new ClientOptions(
+                    url: (string) getenv('TEST_STORAGE_API_URL'),
+                    token: (string) getenv('TEST_STORAGE_API_TOKEN'),
+                    branchId: null,
+                    useBranchStorage: true,
+                ),
+            ])
+            ->onlyMethods(['getBasicClient'])
+            ->getMock();
+
+        $clientWrapper->method('getBasicClient')->willReturn($storageClient);
+
+        $clientWrapper->getDefaultBranch();
+        $defaultBranch = $clientWrapper->getDefaultBranch();
+
+        self::assertSame('123', $defaultBranch['branchId']);
+        self::assertSame('Main', $defaultBranch['branchName']);
+        self::assertTrue($defaultBranch['isDefault']);
+    }
 }
