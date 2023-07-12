@@ -245,4 +245,18 @@ class ClientWrapperTest extends TestCase
         self::assertSame('Main', $clientWrapper->getBranchName());
         self::assertInstanceOf(Client::class, $clientWrapper->getTableAndFileStorageClient());
     }
+
+    public function testGetDefaultBranch(): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: (string) getenv('TEST_STORAGE_API_URL'),
+            token: (string) getenv('TEST_STORAGE_API_TOKEN'),
+            branchId: null,
+            useBranchStorage: true,
+        ));
+
+        self::assertIsScalar($clientWrapper->getDefaultBranch()['id']);
+        self::assertSame('Main', $clientWrapper->getDefaultBranch()['name']);
+        self::assertTrue($clientWrapper->getDefaultBranch()['isDefault']);
+    }
 }
