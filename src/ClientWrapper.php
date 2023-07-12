@@ -6,9 +6,9 @@ namespace Keboola\StorageApiBranch;
 
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
-use LogicException;
 
 class ClientWrapper
 {
@@ -17,6 +17,9 @@ class ClientWrapper
     private ClientOptions $clientOptions;
     private ?Client $client;
     private ?BranchAwareClient $branchClient;
+    private ?bool $isDefaultBranch = null;
+    private string $branchId;
+    private string $branchName;
 
     public function __construct(ClientOptions $clientOptions)
     {
@@ -35,12 +38,9 @@ class ClientWrapper
 
     public function getBranchClient(): BranchAwareClient
     {
-        if (!$this->hasBranch()) {
-            throw new LogicException('Branch is not set.');
-        }
         if (empty($this->branchClient)) {
             $this->branchClient = new BranchAwareClient(
-                (string) $this->clientOptions->getBranchId(),
+                (string) $this->getBranchId(),
                 $this->clientOptions->getClientConstructOptions(),
             );
             $this->branchClient->setRunId($this->clientOptions->getRunId());
@@ -50,41 +50,90 @@ class ClientWrapper
     }
 
     /**
-     * Returns branchClient if a branch was configured and basicClient otherwise.
+     * Returns branchClient if useBranchStorage flag is configured
      *
      * @return Client|BranchAwareClient
      */
-    public function getBranchClientIfAvailable(): Client
+    public function getTableAndFileStorageClient(): Client
     {
-        if ($this->hasBranch()) {
+        if ($this->clientOptions->useBranchStorage()) {
             return $this->getBranchClient();
         }
-
         return $this->getBasicClient();
+    }
+
+    /**
+     * Returns branchClient if a branch was configured and basicClient otherwise.
+     *
+     * @return Client|BranchAwareClient
+     * @deprecated Use getBranchClient for all endpoints that support branches.
+     */
+    public function getBranchClientIfAvailable(): Client
+    {
+        return $this->getBranchClient();
     }
 
     public function getBranchId(): ?string
     {
-        return $this->clientOptions->getBranchId();
+        $this->resolveBranchId();
+        return $this->branchId;
     }
 
     public function getBranchName(): ?string
     {
-        if ($this->hasBranch()) {
-            $branches = new DevBranches($this->getBasicClient());
-            return $branches->getBranch((int) $this->getBranchId())['name'];
-        } else {
-            return null;
-        }
+        $this->resolveBranchId();
+        return $this->branchName;
     }
 
+    /**
+     * Returns true if the configured branch is NON-default. Returns false for the
+     *  default/main/production branch.
+     */
     public function hasBranch(): bool
     {
-        return $this->clientOptions->getBranchId() !== null;
+        $this->resolveBranchId();
+        return !$this->isDefaultBranch;
+    }
+
+    public function isDefaultBranch(): bool
+    {
+        $this->resolveBranchId();
+        // after branch is resolved, isDefaultBranch is always set
+        return (bool) $this->isDefaultBranch;
     }
 
     public function getClientOptionsReadOnly(): ClientOptions
     {
         return clone $this->clientOptions;
+    }
+
+    private function resolveBranchId(): void
+    {
+        if ($this->isDefaultBranch !== null) {
+            return;
+        }
+
+        $branchesApiClient = new DevBranches($this->getBasicClient());
+        $branchId = $this->clientOptions->getBranchId();
+        if ($branchId === null || $branchId === 'default') {
+            foreach ($branchesApiClient->listBranches() as $branch) {
+                if ($branch['isDefault']) {
+                    $this->branchId = (string) $branch['id'];
+                    $this->isDefaultBranch = true;
+                    $this->branchName = (string) $branch['name'];
+                    return;
+                }
+            }
+        }
+
+        foreach ($branchesApiClient->listBranches() as $branch) {
+            if ($branchId === (string) $branch['id']) {
+                $this->isDefaultBranch = $branch['isDefault'];
+                $this->branchName = (string) $branch['name'];
+                $this->branchId = (string) $branch['id'];
+                return;
+            }
+        }
+        throw new ClientException(sprintf('Can\'t resolve branchId: "%s".', $branchId));
     }
 }
