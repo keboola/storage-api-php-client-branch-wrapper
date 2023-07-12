@@ -255,8 +255,8 @@ class ClientWrapperTest extends TestCase
             useBranchStorage: true,
         ));
 
-        self::assertIsScalar($clientWrapper->getDefaultBranch()['id']);
-        self::assertSame('Main', $clientWrapper->getDefaultBranch()['name']);
+        self::assertIsScalar($clientWrapper->getDefaultBranch()['branchId']);
+        self::assertSame('Main', $clientWrapper->getDefaultBranch()['branchName']);
         self::assertTrue($clientWrapper->getDefaultBranch()['isDefault']);
     }
 }
