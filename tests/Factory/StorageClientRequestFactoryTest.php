@@ -107,6 +107,17 @@ class StorageClientRequestFactoryTest extends TestCase
         self::assertStringStartsWith('123', (string) $clientWrapper->getClientOptionsReadOnly()->getRunId());
     }
 
+    public function testExtraClientOptions(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::TOKEN_HEADER => $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request, new ClientOptions(branchId: '1234'));
+
+        self::assertSame('1234', $clientWrapper->getClientOptionsReadOnly()->getBranchId());
+    }
+
     public function testGetClientOptions(): void
     {
         $factory = new StorageClientRequestFactory(new ClientOptions('http://foo'));
