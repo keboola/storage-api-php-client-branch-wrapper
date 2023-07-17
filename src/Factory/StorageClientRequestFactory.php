@@ -49,11 +49,16 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         return $runId;
     }
 
-    public function createClientWrapper(Request $request): ClientWrapper
+    public function createClientWrapper(Request $request, ?ClientOptions $clientOptions = null): ClientWrapper
     {
         $options = clone $this->clientOptions;
+        if ($clientOptions) {
+            $options->addValuesFrom($clientOptions);
+        }
+
         $options->setToken($this->getTokenFromRequest($request));
         $options->setRunId($this->getRunId($request, $options));
+
         return new ClientWrapper($options);
     }
 
