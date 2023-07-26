@@ -42,7 +42,7 @@ class ClientWrapper
     {
         if (empty($this->branchClient)) {
             $this->branchClient = new BranchAwareClient(
-                (string) $this->getBranchId(),
+                $this->getBranchId(),
                 $this->clientOptions->getClientConstructOptions(),
             );
             $this->branchClient->setRunId($this->clientOptions->getRunId());
@@ -53,10 +53,8 @@ class ClientWrapper
 
     /**
      * Returns branchClient if useBranchStorage flag is configured
-     *
-     * @return Client|BranchAwareClient
      */
-    public function getTableAndFileStorageClient(): Client
+    public function getTableAndFileStorageClient(): Client|BranchAwareClient
     {
         if ($this->clientOptions->useBranchStorage()) {
             return $this->getBranchClient();
@@ -64,24 +62,13 @@ class ClientWrapper
         return $this->getBasicClient();
     }
 
-    /**
-     * Returns branchClient if a branch was configured and basicClient otherwise.
-     *
-     * @return Client|BranchAwareClient
-     * @deprecated Use getBranchClient for all endpoints that support branches.
-     */
-    public function getBranchClientIfAvailable(): Client
-    {
-        return $this->getBranchClient();
-    }
-
-    public function getBranchId(): ?string
+    public function getBranchId(): string
     {
         $this->resolveBranchId();
         return $this->branchId;
     }
 
-    public function getBranchName(): ?string
+    public function getBranchName(): string
     {
         $this->resolveBranchId();
         return $this->branchName;
@@ -91,7 +78,7 @@ class ClientWrapper
      * Returns true if the configured branch is NON-default. Returns false for the
      *  default/main/production branch.
      */
-    public function hasBranch(): bool
+    public function isDevelopmentBranch(): bool
     {
         $this->resolveBranchId();
         return !$this->isDefaultBranch;
