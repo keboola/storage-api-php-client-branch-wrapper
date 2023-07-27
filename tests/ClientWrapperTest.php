@@ -11,7 +11,6 @@ use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
-use LogicException;
 use PHPUnit\Framework\TestCase;
 
 class ClientWrapperTest extends TestCase
@@ -30,9 +29,8 @@ class ClientWrapperTest extends TestCase
             (string) $branchId,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        self::assertTrue($clientWrapper->hasBranch());
+        self::assertTrue($clientWrapper->isDevelopmentBranch());
         self::assertSame((string) $branchId, $clientWrapper->getBranchId());
         self::assertFalse($clientWrapper->isDefaultBranch());
 
@@ -59,8 +57,7 @@ class ClientWrapperTest extends TestCase
             null
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(Client::class, $clientWrapper->getBranchClientIfAvailable());
-        self::assertFalse($clientWrapper->hasBranch());
+        self::assertFalse($clientWrapper->isDevelopmentBranch());
         self::assertSame('Main', $clientWrapper->getBranchName());
         self::assertSame((string) $expectedId, $clientWrapper->getBranchId());
         self::assertTrue($clientWrapper->isDefaultBranch());
@@ -86,9 +83,8 @@ class ClientWrapperTest extends TestCase
             ClientWrapper::BRANCH_DEFAULT
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
-        self::assertFalse($clientWrapper->hasBranch());
+        self::assertFalse($clientWrapper->isDevelopmentBranch());
         self::assertSame('Main', $clientWrapper->getBranchName());
         self::assertSame((string) $expectedId, $clientWrapper->getBranchId());
     }
@@ -209,10 +205,9 @@ class ClientWrapperTest extends TestCase
             useBranchStorage: $useBranchStorage,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClientIfAvailable());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
         self::assertInstanceOf($expectedClassName, $clientWrapper->getTableAndFileStorageClient());
-        self::assertFalse($clientWrapper->hasBranch());
+        self::assertFalse($clientWrapper->isDevelopmentBranch());
     }
 
     public function useBranchStorageDataProvider(): Generator
@@ -240,8 +235,7 @@ class ClientWrapperTest extends TestCase
             useBranchStorage: true,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
-        self::assertInstanceOf(Client::class, $clientWrapper->getBranchClientIfAvailable());
-        self::assertFalse($clientWrapper->hasBranch());
+        self::assertFalse($clientWrapper->isDevelopmentBranch());
         self::assertSame('Main', $clientWrapper->getBranchName());
         self::assertInstanceOf(Client::class, $clientWrapper->getTableAndFileStorageClient());
     }
