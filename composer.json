@@ -33,6 +33,7 @@
         "symfony/validator": "^5.2|^6.0"
     },
     "require-dev": {
+        "infection/infection": "^0.27",
         "keboola/coding-standard": ">=13.0",
         "phpstan/phpstan": "^1.5",
         "phpstan/phpstan-phpunit": "^1.1",
@@ -44,19 +45,22 @@
         "phpcs": "phpcs --extensions=php src tests",
         "phpcbf": "phpcbf --extensions=php src tests",
         "phpstan": "phpstan analyse --no-progress -c phpstan.neon.dist",
-        "phpunit": "phpunit",
+        "tests": "phpunit --coverage-clover /tmp/build-logs/clover.xml --coverage-xml=/tmp/build-logs/coverage-xml --log-junit=/tmp/build-logs/phpunit.junit.xml",
+        "infection": "infection --threads=4 --min-covered-msi=90 --coverage=/tmp/build-logs --only-covered",
         "ci": [
             "@composer validate --no-check-all --strict",
             "@phpcs",
             "@phpstan",
-            "@phpunit"
+            "@tests",
+            "@infection"
         ]
     },
     "config": {
         "sort-packages": true,
         "process-timeout": 3600,
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "infection/extension-installer": true
         }
     },
     "extra": {

@@ -15,13 +15,11 @@ class ClientWrapper
     public const BRANCH_DEFAULT = 'default';
 
     private ClientOptions $clientOptions;
-    private ?Client $client;
-    private ?BranchAwareClient $branchClient;
-    private ?bool $isDefaultBranch = null;
+    private ?Client $basicClient;
     private string $branchId;
-    private string $branchName;
     private string $defaultBranchId;
-    private string $defaultBranchName;
+    /** @var Branch[] */
+    private array $branches;
 
     public function __construct(ClientOptions $clientOptions)
     {
@@ -30,25 +28,32 @@ class ClientWrapper
 
     public function getBasicClient(): Client
     {
-        if (empty($this->client)) {
-            $this->client = new Client($this->clientOptions->getClientConstructOptions());
-            $this->client->setRunId($this->clientOptions->getRunId());
-            $this->client->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
+        if (empty($this->basicClient)) {
+            $this->basicClient = new Client($this->clientOptions->getClientConstructOptions());
+            $this->basicClient->setRunId($this->clientOptions->getRunId());
+            $this->basicClient->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
         }
-        return $this->client;
+        return $this->basicClient;
+    }
+
+    public function getClientForBranch(string $branchId): BranchAwareClient
+    {
+        $this->resolveBranches();
+        if (empty($this->branches[$branchId]->client)) {
+            $branchClient = new BranchAwareClient(
+                (int) $branchId,
+                $this->clientOptions->getClientConstructOptions(),
+            );
+            $branchClient->setRunId($this->clientOptions->getRunId());
+            $branchClient->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
+            $this->branches[$branchId]->client = $branchClient;
+        }
+        return $this->branches[$branchId]->client;
     }
 
     public function getBranchClient(): BranchAwareClient
     {
-        if (empty($this->branchClient)) {
-            $this->branchClient = new BranchAwareClient(
-                $this->getBranchId(),
-                $this->clientOptions->getClientConstructOptions(),
-            );
-            $this->branchClient->setRunId($this->clientOptions->getRunId());
-            $this->branchClient->setBackendConfiguration($this->clientOptions->getBackendConfiguration());
-        }
-        return $this->branchClient;
+        return $this->getClientForBranch($this->getBranchId());
     }
 
     /**
@@ -64,14 +69,14 @@ class ClientWrapper
 
     public function getBranchId(): string
     {
-        $this->resolveBranchId();
+        $this->resolveBranches();
         return $this->branchId;
     }
 
     public function getBranchName(): string
     {
-        $this->resolveBranchId();
-        return $this->branchName;
+        $this->resolveBranches();
+        return $this->branches[$this->branchId]->name;
     }
 
     /**
@@ -80,26 +85,26 @@ class ClientWrapper
      */
     public function isDevelopmentBranch(): bool
     {
-        $this->resolveBranchId();
-        return !$this->isDefaultBranch;
+        $this->resolveBranches();
+        return !$this->branches[$this->branchId]->isDefault;
     }
 
     public function isDefaultBranch(): bool
     {
-        $this->resolveBranchId();
-        // after branch is resolved, isDefaultBranch is always set
-        return (bool) $this->isDefaultBranch;
+        $this->resolveBranches();
+        return $this->branches[$this->branchId]->isDefault;
     }
 
-    public function getDefaultBranch(): array
+    public function getDefaultBranch(): Branch
     {
-        $this->resolveBranchId();
+        $this->resolveBranches();
+        return $this->branches[$this->defaultBranchId];
+    }
 
-        return [
-            'branchId' => $this->defaultBranchId,
-            'branchName' => $this->defaultBranchName,
-            'isDefault' => true,
-        ];
+    public function getBranch(): Branch
+    {
+        $this->resolveBranches();
+        return $this->branches[$this->branchId];
     }
 
     public function getClientOptionsReadOnly(): ClientOptions
@@ -107,36 +112,38 @@ class ClientWrapper
         return clone $this->clientOptions;
     }
 
-    private function resolveBranchId(): void
+    private function resolveBranches(): void
     {
-        if ($this->isDefaultBranch !== null) {
+        if (!empty($this->branches)) {
             return;
         }
 
-        $branchesApiClient = new DevBranches($this->getBasicClient());
+        $branchesApi = new DevBranches($this->getBasicClient());
         $branchId = $this->clientOptions->getBranchId();
 
-        foreach ($branchesApiClient->listBranches() as $branch) {
+        foreach ($branchesApi->listBranches() as $branch) {
+            $this->branches[(string) $branch['id']] = new Branch(
+                (string) $branch['id'],
+                (string) $branch['name'],
+                (bool) $branch['isDefault'],
+            );
             if ($branch['isDefault']) {
                 $this->defaultBranchId = (string) $branch['id'];
-                $this->defaultBranchName = (string) $branch['name'];
-
-                if ($branchId === null || $branchId === 'default') {
-                    $this->isDefaultBranch = true;
-                    $this->branchId = (string) $branch['id'];
-                    $this->branchName = (string) $branch['name'];
-                }
-            }
-
-            if ($branchId === (string) $branch['id']) {
-                $this->isDefaultBranch = $branch['isDefault'];
-                $this->branchName = (string) $branch['name'];
-                $this->branchId = (string) $branch['id'];
             }
         }
 
-        if ($this->isDefaultBranch === null) {
-            throw new ClientException(sprintf('Can\'t resolve branchId: "%s".', $branchId));
+        if (empty($this->defaultBranchId)) {
+            throw new ClientException(sprintf('Can not find default branch for branchId: "%s".', $branchId));
+        }
+
+        if ($branchId === null || $branchId === 'default') {
+            $this->branchId = $this->defaultBranchId;
+        } else {
+            $this->branchId = $branchId;
+        }
+
+        if (!isset($this->branches[$this->branchId])) {
+            throw new ClientException(sprintf('Can not resolve branchId: "%s".', $branchId));
         }
     }
 }

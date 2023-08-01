@@ -25,6 +25,7 @@ class StorageClientRequestFactoryTest extends TestCase
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage('Storage API token must be supplied in X-StorageApi-Token header.');
+        $this->expectExceptionCode(401);
 
         $factory->createClientWrapper($request);
     }
@@ -120,10 +121,10 @@ class StorageClientRequestFactoryTest extends TestCase
 
     public function testGetClientOptions(): void
     {
-        $factory = new StorageClientRequestFactory(new ClientOptions('http://foo'));
-        self::assertSame('http://foo', $factory->getClientOptionsReadOnly()->getUrl());
-        $factory->getClientOptionsReadOnly()->setUrl('http://bar');
-        self::assertSame('http://foo', $factory->getClientOptionsReadOnly()->getUrl());
+        $factory = new StorageClientRequestFactory(new ClientOptions('https://foo'));
+        self::assertSame('https://foo', $factory->getClientOptionsReadOnly()->getUrl());
+        $factory->getClientOptionsReadOnly()->setUrl('https://bar');
+        self::assertSame('https://foo', $factory->getClientOptionsReadOnly()->getUrl());
     }
 
     public function testClientOptionsNotModified(): void
