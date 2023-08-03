@@ -38,6 +38,9 @@ class ClientWrapper
 
     public function getClientForBranch(string $branchId): BranchAwareClient
     {
+        if (!ctype_digit($branchId)) {
+            throw new ClientException(sprintf('Branch ID must be a number. "%s" given.', $branchId));
+        }
         $this->resolveBranches();
         if (empty($this->branches[$branchId]->client)) {
             $branchClient = new BranchAwareClient(

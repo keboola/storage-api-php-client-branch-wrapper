@@ -440,4 +440,16 @@ class ClientWrapperTest extends TestCase
 
         $branchApi->deleteBranch((int) $branchId);
     }
+
+    public function testBranchesGetClientForBranchDefaultRejected(): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+        ));
+
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Branch ID must be a number. "default" given.');
+        $clientWrapper->getClientForBranch('default');
+    }
 }
