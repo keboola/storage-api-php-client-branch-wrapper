@@ -425,6 +425,7 @@ class ClientWrapperTest extends TestCase
         // branch client is for the configured for the default branch
         self::assertSame($defaultBranchClient, $clientWrapper->getBranchClient());
         self::assertSame($devBranchClient, $clientWrapper->getClientForBranch($branchId));
+        self::assertSame($defaultBranchClient, $clientWrapper->getClientForDefaultBranch());
 
         $clientWrapper = new ClientWrapper(new ClientOptions(
             (string) getenv('TEST_STORAGE_API_URL'),
@@ -437,6 +438,7 @@ class ClientWrapperTest extends TestCase
         // branch client is for the configured branch in client wrapper
         self::assertSame($devBranchClient, $clientWrapper->getBranchClient());
         self::assertSame($defaultBranchClient, $clientWrapper->getClientForBranch($defaultBranchId));
+        self::assertSame($defaultBranchClient, $clientWrapper->getClientForDefaultBranch());
 
         $branchApi->deleteBranch((int) $branchId);
     }

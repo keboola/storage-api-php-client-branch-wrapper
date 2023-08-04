@@ -59,6 +59,11 @@ class ClientWrapper
         return $this->getClientForBranch($this->getBranchId());
     }
 
+    public function getClientForDefaultBranch(): BranchAwareClient
+    {
+        return $this->getClientForBranch($this->getDefaultBranch()->id);
+    }
+
     /**
      * Returns branchClient if useBranchStorage flag is configured
      */
