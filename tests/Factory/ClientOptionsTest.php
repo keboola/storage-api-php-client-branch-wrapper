@@ -108,15 +108,17 @@ class ClientOptionsTest extends TestCase
     public function testSetInvalidUrl(): void
     {
         $clientOptions = new ClientOptions();
-        $this->expectExceptionMessage('r');
+        $this->expectExceptionMessage('Value "boo" is invalid: Storage API URL is not valid.');
         $this->expectException(ClientException::class);
+        $this->expectExceptionCode(0);
         $clientOptions->setUrl('boo');
     }
 
     public function testInvalidUrlConstruct(): void
     {
-        $this->expectExceptionMessage('r');
+        $this->expectExceptionMessage('Value "boo" is invalid: Storage API URL is not valid.');
         $this->expectException(ClientException::class);
+        $this->expectExceptionCode(0);
         new ClientOptions('boo');
     }
 
