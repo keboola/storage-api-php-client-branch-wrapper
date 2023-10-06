@@ -34,7 +34,7 @@ class ClientOptionsTest extends TestCase
             $retryFunction,
             $runIdGenerator,
             $backendConfiguration,
-            true
+            true,
         );
 
         self::assertSame('http://dummy', $clientOptions->getUrl());
@@ -192,7 +192,7 @@ class ClientOptionsTest extends TestCase
             null,
             null,
             null,
-            null
+            null,
         );
         $clientOptions1->addValuesFrom($clientOptions3);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
@@ -244,7 +244,7 @@ class ClientOptionsTest extends TestCase
                 'logger' => $logger,
                 'jobPollRetryDelay' => $retryFunction,
             ],
-            $clientOptions->getClientConstructOptions()
+            $clientOptions->getClientConstructOptions(),
         );
     }
 }

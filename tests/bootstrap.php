@@ -16,7 +16,7 @@ $client = new Client(
     [
         'token' => (string) getenv('TEST_STORAGE_API_TOKEN'),
         'url' => (string) getenv('TEST_STORAGE_API_URL'),
-    ]
+    ],
 );
 
 try {
@@ -25,6 +25,6 @@ try {
     throw new RuntimeException(
         sprintf('Failed to verify TEST_STORAGE_API_TOKEN "%s".', $e->getMessage()),
         0,
-        $e
+        $e,
     );
 }

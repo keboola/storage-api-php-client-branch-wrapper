@@ -54,7 +54,7 @@ class ClientOptions
         ?Closure $jobPollRetryDelay = null,
         ?Closure $runIdGenerator = null,
         ?BackendConfiguration $backendConfiguration = null,
-        ?bool $useBranchStorage = null
+        ?bool $useBranchStorage = null,
     ) {
         $this->setUrl($url);
         $this->setToken($token);
@@ -95,7 +95,7 @@ class ClientOptions
             $errors = $validator->validate($url, [new Url(['message' => 'Storage API URL is not valid.'])]);
             if ($errors->count() !== 0) {
                 throw new ClientException(
-                    'Value "' . $errors->get(0)->getInvalidValue() . '" is invalid: ' . $errors->get(0)->getMessage()
+                    'Value "' . $errors->get(0)->getInvalidValue() . '" is invalid: ' . $errors->get(0)->getMessage(),
                 );
             }
         }
