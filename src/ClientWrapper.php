@@ -43,7 +43,7 @@ class ClientWrapper
         }
         $this->resolveBranches();
         if (!isset($this->branches[$branchId])) {
-            throw new ClientException(sprintf('Branch with ID "%s" does not exists.', $branchId));
+            throw new ClientException(sprintf('Branch with ID "%s" does not exist.', $branchId));
         }
         if (empty($this->branches[$branchId]->client)) {
             $branchClient = new BranchAwareClient(

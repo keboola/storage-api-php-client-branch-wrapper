@@ -463,7 +463,7 @@ class ClientWrapperTest extends TestCase
         ));
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Branch with ID "1" does not exists.');
+        $this->expectExceptionMessage('Branch with ID "1" does not exist.');
         $clientWrapper->getClientForBranch('1');
     }
 }
