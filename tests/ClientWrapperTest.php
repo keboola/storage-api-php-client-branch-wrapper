@@ -29,7 +29,7 @@ class ClientWrapperTest extends TestCase
         self::assertSame('1234', $clientWrapper->getBasicClient()->getRunId());
         self::assertEquals(
             new BackendConfiguration('foo', 'bar'),
-            $clientWrapper->getBasicClient()->getBackendConfiguration()
+            $clientWrapper->getBasicClient()->getBackendConfiguration(),
         );
         self::assertTrue($clientWrapper->isDefaultBranch());
     }
@@ -73,7 +73,7 @@ class ClientWrapperTest extends TestCase
         $clientWrapper = new ClientWrapper(new ClientOptions(
             (string) getenv('TEST_STORAGE_API_URL'),
             (string) getenv('TEST_STORAGE_API_TOKEN'),
-            null
+            null,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
         self::assertFalse($clientWrapper->isDevelopmentBranch());
@@ -99,7 +99,7 @@ class ClientWrapperTest extends TestCase
         $clientWrapper = new ClientWrapper(new ClientOptions(
             (string) getenv('TEST_STORAGE_API_URL'),
             (string) getenv('TEST_STORAGE_API_TOKEN'),
-            ClientWrapper::BRANCH_DEFAULT
+            ClientWrapper::BRANCH_DEFAULT,
         ));
         self::assertInstanceOf(Client::class, $clientWrapper->getBasicClient());
         self::assertInstanceOf(BranchAwareClient::class, $clientWrapper->getBranchClient());
@@ -112,12 +112,12 @@ class ClientWrapperTest extends TestCase
     {
         $options = new ClientOptions(
             (string) getenv('TEST_STORAGE_API_URL'),
-            (string) getenv('TEST_STORAGE_API_TOKEN')
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
         );
         $clientWrapper = new ClientWrapper($options);
         self::assertSame(
             getenv('TEST_STORAGE_API_URL'),
-            $clientWrapper->getClientOptionsReadOnly()->getUrl()
+            $clientWrapper->getClientOptionsReadOnly()->getUrl(),
         );
     }
 
@@ -127,7 +127,7 @@ class ClientWrapperTest extends TestCase
             [
                 'url' => (string) getenv('TEST_STORAGE_API_URL'),
                 'token' => (string) getenv('TEST_STORAGE_API_TOKEN'),
-            ]
+            ],
         );
         $branchesApi = new DevBranches($client);
         $branchId = (string) $branchesApi->createBranch('ClientWrapperTest::testGetBranchName')['id'];
@@ -135,7 +135,7 @@ class ClientWrapperTest extends TestCase
             $clientWrapper = new ClientWrapper(new ClientOptions(
                 (string) getenv('TEST_STORAGE_API_URL'),
                 (string) getenv('TEST_STORAGE_API_TOKEN'),
-                $branchId
+                $branchId,
             ));
             self::assertSame($branchId, $clientWrapper->getBranchId());
             self::assertSame('ClientWrapperTest::testGetBranchName', $clientWrapper->getBranchName());

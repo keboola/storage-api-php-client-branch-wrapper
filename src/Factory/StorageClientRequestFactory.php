@@ -28,7 +28,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         if ($token === '') {
             throw new ClientException(
                 sprintf('Storage API token must be supplied in %s header.', self::TOKEN_HEADER),
-                401
+                401,
             );
         }
 
