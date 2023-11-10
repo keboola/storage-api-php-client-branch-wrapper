@@ -16,6 +16,7 @@ class ClientWrapper
 
     private ClientOptions $clientOptions;
     private ?Client $basicClient;
+    private ?StorageApiToken $storageToken;
     private string $branchId;
     private string $defaultBranchId;
     /** @var Branch[] */
@@ -121,6 +122,17 @@ class ClientWrapper
     public function getClientOptionsReadOnly(): ClientOptions
     {
         return clone $this->clientOptions;
+    }
+
+    public function getToken(): StorageApiToken
+    {
+        if (empty($this->storageToken)) {
+            $this->storageToken = new StorageApiToken(
+                $this->getBranchClient()->verifyToken(),
+                $this->getBranchClient()->getTokenString(),
+            );
+        }
+        return $this->storageToken;
     }
 
     private function resolveBranches(): void

@@ -466,4 +466,17 @@ class ClientWrapperTest extends TestCase
         $this->expectExceptionMessage('Branch with ID "1" does not exist.');
         $clientWrapper->getClientForBranch('1');
     }
+
+    public function testGetToken(): void
+    {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            (string) getenv('TEST_STORAGE_API_URL'),
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+        ));
+
+        self::assertSame(
+            (string) getenv('TEST_STORAGE_API_TOKEN'),
+            $clientWrapper->getToken()->getTokenValue(),
+        );
+    }
 }
