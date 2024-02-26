@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch;
 
-use Symfony\Component\Security\Core\User\UserInterface;
-
 class StorageApiToken
 {
     public function __construct(
@@ -103,5 +101,10 @@ class StorageApiToken
                 return preg_match('/^can[a-z]+$/ui', $value);
             },
         );
+    }
+
+    public function isAdminToken(): bool
+    {
+        return !empty($this->tokenInfo['admin']);
     }
 }

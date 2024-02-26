@@ -53,6 +53,7 @@ class StorageApiTokenTest extends TestCase
         self::assertSame(['admin'], $token->getRoles());
         self::assertSame(['keboola.component'], $token->getAllowedComponents());
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
+        self::assertTrue($token->isAdminToken());
 
         self::assertSame(
             [
@@ -80,6 +81,9 @@ class StorageApiTokenTest extends TestCase
             ],
             $token->getTokenInfo(),
         );
+
+        $token = new StorageApiToken([], 'tokenValue');
+        self::assertFalse($token->isAdminToken());
     }
 
     public function testAccessorsTypeZealous(): void
