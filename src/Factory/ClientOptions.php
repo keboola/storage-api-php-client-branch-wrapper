@@ -8,6 +8,7 @@ use Closure;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
+use SensitiveParameter;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\Validator\Validation;
 
@@ -43,7 +44,7 @@ class ClientOptions
 
     public function __construct(
         ?string $url = null,
-        ?string $token = null,
+        #[SensitiveParameter] ?string $token = null,
         ?string $branchId = null,
         ?string $runId = null,
         ?LoggerInterface $logger = null,
@@ -108,7 +109,7 @@ class ClientOptions
         return $this->url;
     }
 
-    public function setToken(?string $token): ClientOptions
+    public function setToken(#[SensitiveParameter] ?string $token): ClientOptions
     {
         $this->token = $token;
         return $this;

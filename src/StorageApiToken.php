@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch;
 
+use SensitiveParameter;
+
 class StorageApiToken
 {
     public function __construct(
         private readonly array $tokenInfo,
-        private readonly string $tokenValue,
+        #[SensitiveParameter] private readonly string $tokenValue,
     ) {
     }
 
