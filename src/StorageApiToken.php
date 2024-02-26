@@ -95,12 +95,12 @@ class StorageApiToken
     {
         return array_filter(
             array_keys(
-                array_filter($this->tokenInfo, function ($value) {
+                array_filter($this->tokenInfo, function (mixed $value): bool {
                     return $value === true;
                 }),
             ),
-            function (string $value) {
-                return preg_match('/^can[a-z]+$/ui', $value);
+            function (string $value): bool {
+                return (bool) preg_match('/^can[a-z]+$/ui', $value);
             },
         );
     }
