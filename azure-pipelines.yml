@@ -10,8 +10,8 @@ pool:
 
 steps:
 - script: docker-compose build --build-arg PHP_VERSION=$PHP_VERSION ci && docker-compose run --rm ci
-  displayName: 'Run Tests PHP 8.1'
+  displayName: 'Run Tests PHP 8.2'
   env:
     TEST_STORAGE_API_URL: $(TEST_STORAGE_API_URL)
     TEST_STORAGE_API_TOKEN: $(TEST_STORAGE_API_TOKEN)
-    PHP_VERSION: 8.1
+    PHP_VERSION: 8.2
