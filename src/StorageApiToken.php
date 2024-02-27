@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch;
 
-use Symfony\Component\Security\Core\User\UserInterface;
+use SensitiveParameter;
 
 class StorageApiToken
 {
     public function __construct(
         private readonly array $tokenInfo,
-        private readonly string $tokenValue,
+        #[SensitiveParameter] private readonly string $tokenValue,
     ) {
     }
 
@@ -95,13 +95,18 @@ class StorageApiToken
     {
         return array_filter(
             array_keys(
-                array_filter($this->tokenInfo, function ($value) {
+                array_filter($this->tokenInfo, function (mixed $value): bool {
                     return $value === true;
                 }),
             ),
-            function (string $value) {
-                return preg_match('/^can[a-z]+$/ui', $value);
+            function (string $value): bool {
+                return (bool) preg_match('/^can[a-z]+$/ui', $value);
             },
         );
+    }
+
+    public function isAdminToken(): bool
+    {
+        return !empty($this->tokenInfo['admin']);
     }
 }
