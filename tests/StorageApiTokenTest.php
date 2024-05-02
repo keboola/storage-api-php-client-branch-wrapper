@@ -198,4 +198,27 @@ class StorageApiTokenTest extends TestCase
 
         self::assertSame(null, $token->getAllowedComponents());
     }
+
+    public function testSamlNotSet(): void
+    {
+        $token = new StorageApiToken(
+            [
+                'id' => '123',
+                'description' => 'token description',
+                'owner' => [
+                    'id' => '456',
+                    'name' => 'my project',
+                    'features' => ['foo', 'bar'],
+                    'payAsYouGo' => [
+                        'purchasedCredits' => 1.23,
+                    ],
+                    'fileStorageProvider' => 'aws',
+                ],
+                'admin' => [],
+            ],
+            'tokenValue',
+        );
+
+        self::assertNull($token->getSamlUserId());
+    }
 }

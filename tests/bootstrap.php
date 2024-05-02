@@ -8,9 +8,16 @@ use Symfony\Component\Dotenv\Dotenv;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-(new Dotenv())->usePutenv(true)->bootEnv(dirname(__DIR__) . '/.env', 'dev', []);
+$dotEnv = new Dotenv();
+$dotEnv->usePutenv();
+$dotEnv->bootEnv(dirname(__DIR__).'/.env', 'dev', []);
 
 $requiredEnvs = ['TEST_STORAGE_API_URL', 'TEST_STORAGE_API_TOKEN'];
+foreach ($requiredEnvs as $env) {
+    if (empty(getenv($env))) {
+        throw new Exception(sprintf('The "%s" environment variable is empty.', $env));
+    }
+}
 
 $client = new Client(
     [

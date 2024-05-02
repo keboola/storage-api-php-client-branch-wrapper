@@ -54,8 +54,8 @@ class StorageApiToken
 
     public function getSamlUserId(): ?string
     {
-        return $this->tokenInfo['admin']['samlParameters']['userId'] ?
-            (string) $this->tokenInfo['admin']['samlParameters']['userId'] : null;
+        $userId = $this->tokenInfo['admin']['samlParameters']['userId'] ?? null;
+        return ($userId !== null) ? (string) $userId : null;
     }
 
     public function getFileStorageProvider(): string
