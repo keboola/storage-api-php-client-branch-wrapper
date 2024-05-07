@@ -14,19 +14,23 @@ use Symfony\Component\Validator\Validation;
 
 class ClientOptions
 {
-    private ?string $url;
-    private ?string $token;
-    private ?string $branchId;
-    private ?string $runId;
-    private ?LoggerInterface $logger;
-    private ?string $userAgent;
-    private ?int $backoffMaxTries;
-    private ?int $awsRetries;
-    private ?bool $awsDebug;
-    private ?Closure $jobPollRetryDelay;
-    private ?Closure $runIdGenerator;
-    private ?BackendConfiguration $backendConfiguration;
-    private ?bool $useBranchStorage;
+    public function __construct(
+        private ?string $url = null,
+        #[SensitiveParameter] private ?string $token = null,
+        private ?string $branchId = null,
+        private ?string $runId = null,
+        private ?LoggerInterface $logger = null,
+        private ?string $userAgent = null,
+        private ?int $backoffMaxTries = null,
+        private ?int $awsRetries = null,
+        private ?bool $awsDebug = null,
+        private ?Closure $jobPollRetryDelay = null,
+        private ?Closure $runIdGenerator = null,
+        private ?BackendConfiguration $backendConfiguration = null,
+        private ?bool $useBranchStorage = null,
+    ) {
+        $this->setUrl($url); // call to validate URL
+    }
 
     public function getClientConstructOptions(): array
     {
@@ -40,36 +44,6 @@ class ClientOptions
             'logger' => $this->getLogger(),
             'jobPollRetryDelay' => $this->getJobPollRetryDelay(),
         ];
-    }
-
-    public function __construct(
-        ?string $url = null,
-        #[SensitiveParameter] ?string $token = null,
-        ?string $branchId = null,
-        ?string $runId = null,
-        ?LoggerInterface $logger = null,
-        ?string $userAgent = null,
-        ?int $backoffMaxTries = null,
-        ?int $awsRetries = null,
-        ?bool $awsDebug = null,
-        ?Closure $jobPollRetryDelay = null,
-        ?Closure $runIdGenerator = null,
-        ?BackendConfiguration $backendConfiguration = null,
-        ?bool $useBranchStorage = null,
-    ) {
-        $this->setUrl($url);
-        $this->setToken($token);
-        $this->setBranchId($branchId);
-        $this->setRunId($runId);
-        $this->setLogger($logger);
-        $this->setUserAgent($userAgent);
-        $this->setBackoffMaxTries($backoffMaxTries);
-        $this->setAwsRetries($awsRetries);
-        $this->setAwsDebug($awsDebug);
-        $this->setJobPollRetryDelay($jobPollRetryDelay);
-        $this->setRunIdGenerator($runIdGenerator);
-        $this->setBackendConfiguration($backendConfiguration);
-        $this->setUseBranchStorage($useBranchStorage);
     }
 
     public function addValuesFrom(ClientOptions $clientOptions): void
