@@ -28,6 +28,7 @@ class ClientOptions
         private ?Closure $runIdGenerator = null,
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
+        private ?bool $retryOnMaintenance = null,
     ) {
         $this->setUrl($url); // call to validate URL
     }
@@ -39,6 +40,7 @@ class ClientOptions
             'userAgent' => $this->getUserAgent(),
             'token' => $this->getToken(),
             'backoffMaxTries' => $this->getBackoffMaxTries(),
+            'retryOnMaintenance' => $this->getRetryOnMaintenance(),
             'awsRetries' => $this->getAwsRetries(),
             'awsDebug' => $this->getAwsDebug(),
             'logger' => $this->getLogger(),
@@ -55,6 +57,7 @@ class ClientOptions
         $this->logger = $clientOptions->getLogger() ?? $this->logger;
         $this->userAgent = $clientOptions->getUserAgent() ?? $this->userAgent;
         $this->backoffMaxTries = $clientOptions->getBackoffMaxTries() ?? $this->backoffMaxTries;
+        $this->retryOnMaintenance = $clientOptions->getRetryOnMaintenance() ?? $this->retryOnMaintenance;
         $this->awsRetries = $clientOptions->getAwsRetries() ?? $this->awsRetries;
         $this->awsDebug = $clientOptions->getAwsDebug() ?? $this->awsDebug;
         $this->jobPollRetryDelay = $clientOptions->getJobPollRetryDelay() ?? $this->jobPollRetryDelay;
@@ -213,5 +216,15 @@ class ClientOptions
     public function useBranchStorage(): ?bool
     {
         return $this->useBranchStorage;
+    }
+
+    public function getRetryOnMaintenance(): ?bool
+    {
+        return $this->retryOnMaintenance;
+    }
+
+    public function setRetryOnMaintenance(?bool $retryOnMaintenance): void
+    {
+        $this->retryOnMaintenance = $retryOnMaintenance;
     }
 }
