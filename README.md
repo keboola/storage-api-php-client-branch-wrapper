@@ -27,7 +27,7 @@ file to create `.env` file.
 
 Run tests with:
 
-    docker-compose run --rm ci
+    docker-compose run --rm dev
 
 ## License
 

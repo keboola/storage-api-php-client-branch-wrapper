@@ -9,9 +9,11 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: docker-compose build --build-arg PHP_VERSION=$PHP_VERSION ci && docker-compose run --rm ci
-  displayName: 'Run Tests PHP 8.2'
+- script: docker compose build dev
+  displayName: Build image
+
+- script: docker compose run --rm dev bash -c 'composer install && composer ci'
+  displayName: Tests
   env:
     TEST_STORAGE_API_URL: $(TEST_STORAGE_API_URL)
     TEST_STORAGE_API_TOKEN: $(TEST_STORAGE_API_TOKEN)
-    PHP_VERSION: 8.2
