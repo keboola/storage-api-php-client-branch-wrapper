@@ -1,14 +1,11 @@
 services:
-  ci: &ci
+  dev:
     build:
       context: .
-      dockerfile: Dockerfile
+      args:
+        PHP_VERSION: "8.2"
     environment:
       - TEST_STORAGE_API_URL
       - TEST_STORAGE_API_TOKEN
-    command: ["composer", "ci"]
-
-  dev:
-    <<: *ci
     volumes:
       - ./:/code
