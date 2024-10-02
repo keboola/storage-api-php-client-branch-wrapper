@@ -109,4 +109,14 @@ class StorageApiToken
     {
         return !empty($this->tokenInfo['admin']);
     }
+
+    public function getAssignedBackends(): array
+    {
+        return $this->tokenInfo['owner']['assignedBackends'];
+    }
+
+    public function hasAssignedBackend(string $backend): bool
+    {
+        return in_array($backend, $this->getAssignedBackends(), true);
+    }
 }

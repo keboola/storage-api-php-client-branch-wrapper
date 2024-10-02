@@ -26,6 +26,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'assignedBackends' => ['snowflake', 'bigquery'],
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -54,6 +55,9 @@ class StorageApiTokenTest extends TestCase
         self::assertSame(['keboola.component'], $token->getAllowedComponents());
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
         self::assertTrue($token->isAdminToken());
+        self::assertSame(['snowflake', 'bigquery'], $token->getAssignedBackends());
+        self::assertTrue($token->hasAssignedBackend('snowflake'));
+        self::assertFalse($token->hasAssignedBackend('redshift'));
 
         self::assertSame(
             [
@@ -70,6 +74,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'assignedBackends' => ['snowflake', 'bigquery'],
                 ],
                 'admin' => [
                     'samlParameters' => [
