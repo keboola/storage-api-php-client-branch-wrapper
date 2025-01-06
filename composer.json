@@ -28,9 +28,9 @@
     "require": {
         "php": ">=8.2",
         "ext-json": "*",
-        "keboola/storage-api-client": "^15.0",
-        "symfony/http-foundation": "^5.2|^6.0",
-        "symfony/validator": "^5.2|^6.0"
+        "keboola/storage-api-client": "^15.3",
+        "symfony/http-foundation": "^5.2|^6.0|^7.0",
+        "symfony/validator": "^5.2|^6.0|^7.0"
     },
     "require-dev": {
         "infection/infection": "^0.27",
