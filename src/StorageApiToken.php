@@ -114,4 +114,9 @@ class StorageApiToken
     {
         return !empty($this->tokenInfo['admin']);
     }
+
+    public function getProjectBackend(): string
+    {
+        return $this->tokenInfo['owner']['defaultBackend'];
+    }
 }

@@ -26,6 +26,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -56,6 +57,7 @@ class StorageApiTokenTest extends TestCase
         self::assertSame(['keboola.component'], $token->getAllowedComponents());
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
         self::assertTrue($token->isAdminToken());
+        self::assertSame('snowflake', $token->getProjectBackend());
 
         self::assertSame(
             [
@@ -72,6 +74,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -105,6 +108,7 @@ class StorageApiTokenTest extends TestCase
                     'payAsYouGo' => [
                         'purchasedCredits' => 1,
                     ],
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -154,6 +158,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -218,6 +223,7 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'id' => '246',
