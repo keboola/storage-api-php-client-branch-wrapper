@@ -32,6 +32,7 @@ class StorageApiTokenTest extends TestCase
                         'userId' => '789',
                     ],
                     'role' => 'admin',
+                    'id' => '246',
                 ],
                 'componentAccess' => ['keboola.component'],
             ],
@@ -50,6 +51,7 @@ class StorageApiTokenTest extends TestCase
         self::assertSame('my project', $token->getProjectName());
         self::assertSame('token description', $token->getTokenDesc());
         self::assertSame('admin', $token->getRole());
+        self::assertSame('246', $token->getUserId());
         self::assertSame(['admin'], $token->getRoles());
         self::assertSame(['keboola.component'], $token->getAllowedComponents());
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
@@ -76,6 +78,7 @@ class StorageApiTokenTest extends TestCase
                         'userId' => '789',
                     ],
                     'role' => 'admin',
+                    'id' => '246',
                 ],
                 'componentAccess' => ['keboola.component'],
             ],
@@ -107,6 +110,7 @@ class StorageApiTokenTest extends TestCase
                     'samlParameters' => [
                         'userId' => 789,
                     ],
+                    'id' => '246',
                 ],
             ],
             'tokenValue',
@@ -155,6 +159,7 @@ class StorageApiTokenTest extends TestCase
                     'samlParameters' => [
                         'userId' => '789',
                     ],
+                    'id' => '246',
                 ],
             ],
             'tokenValue',
@@ -214,7 +219,9 @@ class StorageApiTokenTest extends TestCase
                     ],
                     'fileStorageProvider' => 'aws',
                 ],
-                'admin' => [],
+                'admin' => [
+                    'id' => '246',
+                ],
             ],
             'tokenValue',
         );

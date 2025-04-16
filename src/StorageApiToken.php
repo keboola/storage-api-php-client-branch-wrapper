@@ -58,6 +58,11 @@ class StorageApiToken
         return ($userId !== null) ? (string) $userId : null;
     }
 
+    public function getUserId(): string
+    {
+        return (string) $this->tokenInfo['admin']['id'];
+    }
+
     public function getFileStorageProvider(): string
     {
         return $this->tokenInfo['owner']['fileStorageProvider'];
