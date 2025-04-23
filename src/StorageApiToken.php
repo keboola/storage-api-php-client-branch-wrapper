@@ -58,6 +58,11 @@ class StorageApiToken
         return ($userId !== null) ? (string) $userId : null;
     }
 
+    public function getUserId(): string
+    {
+        return (string) $this->tokenInfo['admin']['id'];
+    }
+
     public function getFileStorageProvider(): string
     {
         return $this->tokenInfo['owner']['fileStorageProvider'];
@@ -108,5 +113,10 @@ class StorageApiToken
     public function isAdminToken(): bool
     {
         return !empty($this->tokenInfo['admin']);
+    }
+
+    public function getProjectBackend(): string
+    {
+        return $this->tokenInfo['owner']['defaultBackend'];
     }
 }

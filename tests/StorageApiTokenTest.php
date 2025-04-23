@@ -26,12 +26,14 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
                         'userId' => '789',
                     ],
                     'role' => 'admin',
+                    'id' => '246',
                 ],
                 'componentAccess' => ['keboola.component'],
             ],
@@ -50,10 +52,12 @@ class StorageApiTokenTest extends TestCase
         self::assertSame('my project', $token->getProjectName());
         self::assertSame('token description', $token->getTokenDesc());
         self::assertSame('admin', $token->getRole());
+        self::assertSame('246', $token->getUserId());
         self::assertSame(['admin'], $token->getRoles());
         self::assertSame(['keboola.component'], $token->getAllowedComponents());
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
         self::assertTrue($token->isAdminToken());
+        self::assertSame('snowflake', $token->getProjectBackend());
 
         self::assertSame(
             [
@@ -70,12 +74,14 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
                         'userId' => '789',
                     ],
                     'role' => 'admin',
+                    'id' => '246',
                 ],
                 'componentAccess' => ['keboola.component'],
             ],
@@ -102,11 +108,13 @@ class StorageApiTokenTest extends TestCase
                     'payAsYouGo' => [
                         'purchasedCredits' => 1,
                     ],
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
                         'userId' => 789,
                     ],
+                    'id' => '246',
                 ],
             ],
             'tokenValue',
@@ -150,11 +158,13 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
                 'admin' => [
                     'samlParameters' => [
                         'userId' => '789',
                     ],
+                    'id' => '246',
                 ],
             ],
             'tokenValue',
@@ -213,8 +223,11 @@ class StorageApiTokenTest extends TestCase
                         'purchasedCredits' => 1.23,
                     ],
                     'fileStorageProvider' => 'aws',
+                    'defaultBackend' => 'snowflake',
                 ],
-                'admin' => [],
+                'admin' => [
+                    'id' => '246',
+                ],
             ],
             'tokenValue',
         );
