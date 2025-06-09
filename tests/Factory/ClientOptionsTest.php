@@ -36,10 +36,12 @@ class ClientOptionsTest extends TestCase
             $backendConfiguration,
             true,
             false,
+            'oauthToken',
         );
 
         self::assertSame('http://dummy', $clientOptions->getUrl());
         self::assertSame('token', $clientOptions->getToken());
+        self::assertSame('oauthToken', $clientOptions->getOauthToken());
         self::assertSame('branchId', $clientOptions->getBranchId());
         self::assertSame('runId', $clientOptions->getRunId());
         self::assertSame($logger, $clientOptions->getLogger());
@@ -67,6 +69,7 @@ class ClientOptionsTest extends TestCase
 
         self::assertNull($clientOptions->getUrl());
         self::assertNull($clientOptions->getToken());
+        self::assertNull($clientOptions->getOauthToken());
         self::assertNull($clientOptions->getBranchId());
         self::assertNull($clientOptions->getRunId());
         self::assertNull($clientOptions->getLogger());
@@ -81,6 +84,7 @@ class ClientOptionsTest extends TestCase
 
         $clientOptions->setUrl('http://dummy');
         $clientOptions->setToken('token');
+        $clientOptions->setOauthToken('oauthToken');
         $clientOptions->setBranchId('branchId');
         $clientOptions->setRunId('runId');
         $clientOptions->setLogger($logger);
@@ -96,6 +100,7 @@ class ClientOptionsTest extends TestCase
 
         self::assertSame('http://dummy', $clientOptions->getUrl());
         self::assertSame('token', $clientOptions->getToken());
+        self::assertSame('oauthToken', $clientOptions->getOauthToken());
         self::assertSame('branchId', $clientOptions->getBranchId());
         self::assertSame('runId', $clientOptions->getRunId());
         self::assertEquals($logger, $clientOptions->getLogger());
@@ -155,6 +160,7 @@ class ClientOptionsTest extends TestCase
             $backendConfiguration,
             false,
             false,
+            'oauthToken',
         );
         $clientOptions2 = new ClientOptions(
             'http://dummy2',
@@ -171,10 +177,12 @@ class ClientOptionsTest extends TestCase
             $backendConfiguration2,
             true,
             true,
+            'oauthToken2',
         );
         $clientOptions1->addValuesFrom($clientOptions2);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
         self::assertSame('token2', $clientOptions1->getToken());
+        self::assertSame('oauthToken2', $clientOptions1->getOauthToken());
         self::assertSame('branchId2', $clientOptions1->getBranchId());
         self::assertSame('runId2', $clientOptions1->getRunId());
         self::assertSame($logger, $clientOptions1->getLogger());
@@ -201,10 +209,14 @@ class ClientOptionsTest extends TestCase
             null,
             null,
             null,
+            null,
+            null,
+            null,
         );
         $clientOptions1->addValuesFrom($clientOptions3);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
         self::assertSame('token2', $clientOptions1->getToken());
+        self::assertSame('oauthToken2', $clientOptions1->getOauthToken());
         self::assertSame('branchId2', $clientOptions1->getBranchId());
         self::assertSame('runId2', $clientOptions1->getRunId());
         self::assertSame($logger, $clientOptions1->getLogger());
@@ -248,6 +260,7 @@ class ClientOptionsTest extends TestCase
                 'url' => 'http://dummy',
                 'userAgent' => 'ua',
                 'token' => 'token',
+                // 'oauthToken' => null, // TODO: Doresit jak se to tam vubec dostane
                 'backoffMaxTries' => 42,
                 'retryOnMaintenance' => false,
                 'awsRetries' => 24,
