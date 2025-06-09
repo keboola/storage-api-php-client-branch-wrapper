@@ -29,6 +29,7 @@ class ClientOptions
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
+        #[SensitiveParameter] private ?string $oauthToken = null,
     ) {
         $this->setUrl($url); // call to validate URL
     }
@@ -39,6 +40,7 @@ class ClientOptions
             'url' => $this->getUrl(),
             'userAgent' => $this->getUserAgent(),
             'token' => $this->getToken(),
+            // 'oauthToken' => $this->getOauthToken(), ??????????????????????? TODO Doresit jak se to tam vubec dostane
             'backoffMaxTries' => $this->getBackoffMaxTries(),
             'retryOnMaintenance' => $this->getRetryOnMaintenance(),
             'awsRetries' => $this->getAwsRetries(),
@@ -52,6 +54,7 @@ class ClientOptions
     {
         $this->url = $clientOptions->getUrl() ?? $this->url;
         $this->token = $clientOptions->getToken() ?? $this->token;
+        $this->oauthToken = $clientOptions->getOauthToken() ?? $this->oauthToken;
         $this->branchId = $clientOptions->getBranchId() ?? $this->branchId;
         $this->runId = $clientOptions->getRunId() ?? $this->runId;
         $this->logger = $clientOptions->getLogger() ?? $this->logger;
@@ -95,6 +98,17 @@ class ClientOptions
     public function getToken(): ?string
     {
         return $this->token;
+    }
+
+    public function setOauthToken(#[SensitiveParameter] ?string $oauthToken): ClientOptions
+    {
+        $this->oauthToken = $oauthToken;
+        return $this;
+    }
+
+    public function getOauthToken(): ?string
+    {
+        return $this->oauthToken;
     }
 
     public function setUserAgent(?string $userAgent): ClientOptions
