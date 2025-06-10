@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Factory;
 
 use Closure;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
@@ -29,8 +30,10 @@ class ClientOptions
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
+        private ?string $authMethod = null,
     ) {
         $this->setUrl($url); // call to validate URL
+        $this->setAuthMethod($authMethod); // call to validate authMethod
     }
 
     public function getClientConstructOptions(): array
@@ -45,6 +48,7 @@ class ClientOptions
             'awsDebug' => $this->getAwsDebug(),
             'logger' => $this->getLogger(),
             'jobPollRetryDelay' => $this->getJobPollRetryDelay(),
+            'authMethod' => $this->getAuthMethod(),
         ];
     }
 
@@ -64,6 +68,7 @@ class ClientOptions
         $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
         $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
         $this->useBranchStorage = $clientOptions->useBranchStorage() ?? $this->useBranchStorage;
+        $this->authMethod = $clientOptions->getAuthMethod() ?? $this->authMethod;
     }
 
     public function setUrl(?string $url): ClientOptions
@@ -226,5 +231,29 @@ class ClientOptions
     public function setRetryOnMaintenance(?bool $retryOnMaintenance): void
     {
         $this->retryOnMaintenance = $retryOnMaintenance;
+    }
+
+    public function setAuthMethod(?string $authMethod): ClientOptions
+    {
+        if ($authMethod !== null) {
+            $validMethods = [Client::AUTH_METHOD_TOKEN, Client::AUTH_METHOD_OAUTH];
+            if (!in_array($authMethod, $validMethods)) {
+                throw new ClientException(
+                    sprintf(
+                        'authMethod must be "%s" or "%s". "%s" given.',
+                        Client::AUTH_METHOD_TOKEN,
+                        Client::AUTH_METHOD_OAUTH,
+                        $authMethod,
+                    ),
+                );
+            }
+        }
+        $this->authMethod = $authMethod;
+        return $this;
+    }
+
+    public function getAuthMethod(): ?string
+    {
+        return $this->authMethod;
     }
 }

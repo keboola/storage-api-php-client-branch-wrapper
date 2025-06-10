@@ -24,7 +24,10 @@ class StorageClientRequestFactoryTest extends TestCase
         $factory = new StorageClientRequestFactory(new ClientOptions());
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Storage API token must be supplied in X-StorageApi-Token header.');
+        $this->expectExceptionMessage(
+            'Storage API token must be supplied in X-StorageApi-Token header or OAuth token in ' .
+            'Authorization header with Bearer prefix.',
+        );
         $this->expectExceptionCode(401);
 
         $factory->createClientWrapper($request);
