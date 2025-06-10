@@ -135,6 +135,16 @@ class ClientWrapper
         return $this->storageToken;
     }
 
+    /**
+     * Get the authentication method being used
+     *
+     * @return string
+     */
+    public function getAuthMethod(): string
+    {
+        return $this->getBasicClient()->getAuthMethod();
+    }
+
     private function resolveBranches(): void
     {
         if (!empty($this->branches)) {

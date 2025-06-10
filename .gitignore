@@ -4,3 +4,4 @@ vendor/
 /infection.log
 /.phpunit.result.cache
 /*.local
+.env

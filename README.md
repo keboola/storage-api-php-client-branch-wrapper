@@ -20,10 +20,37 @@ Client options refer to the options of the [Storage API Client constructor](http
 Except for the `runIdGenerator` option which defines a callback used to generate `runId` when none is provided in 
 request (applicable for `StorageClientRequestFactory`).
 
+### OAuth Authentication
+
+The wrapper supports OAuth authentication in addition to the traditional Storage API token authentication:
+
+```php
+// OAuth authentication
+$clientOptions = new ClientOptions(
+    'https://connection.keboola.com',
+    'your_oauth_token',
+    authMethod: Client::AUTH_METHOD_OAUTH
+);
+$clientWrapper = new ClientWrapper($clientOptions);
+```
+
+OAuth authentication can also be detected automatically via HTTP headers when using `StorageClientRequestFactory`:
+
+```php
+// OAuth token via Authorization header (Bearer token)
+$request->headers->set('Authorization', 'Bearer your_oauth_token');
+$factory = new StorageClientRequestFactory(new ClientOptions($url));
+$clientWrapper = $factory->createClientWrapper($request);
+```
+
 ## Development
 
-Create a test Keboola Connection project and set `TEST_STORAGE_API_URL` and `TEST_STORAGE_API_TOKEN` environment variables. Use the `.env.dist`
-file to create `.env` file.
+Create a test Keboola Connection project and set the following environment variables:
+- `TEST_STORAGE_API_URL` - Storage API URL
+- `TEST_STORAGE_API_TOKEN` - Storage API token
+- `OAUTH_TOKEN` - (optional) OAuth token for testing OAuth authentication. If not provided, OAuth-related tests will be skipped.
+
+Use the `.env.dist` file to create `.env` file.
 
 Run tests with:
 

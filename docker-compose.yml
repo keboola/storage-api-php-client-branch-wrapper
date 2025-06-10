@@ -7,5 +7,6 @@ services:
     environment:
       - TEST_STORAGE_API_URL
       - TEST_STORAGE_API_TOKEN
+      - OAUTH_TOKEN
     volumes:
       - ./:/code
