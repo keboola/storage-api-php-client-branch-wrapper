@@ -364,6 +364,7 @@ class ClientWrapperTest extends TestCase
         $clientWrapper->method('getBasicClient')->willReturn($storageClient);
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage('Can not find default branch for branchId: "".');
+        $this->expectExceptionCode(404);
         $clientWrapper->getDefaultBranch();
     }
 
@@ -403,6 +404,7 @@ class ClientWrapperTest extends TestCase
         $clientWrapper->method('getBasicClient')->willReturn($storageClient);
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage('Can not resolve branchId: "125".');
+        $this->expectExceptionCode(404);
         $clientWrapper->getDefaultBranch();
     }
 
@@ -452,6 +454,7 @@ class ClientWrapperTest extends TestCase
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage('Branch ID must be a number. "default" given.');
+        $this->expectExceptionCode(400);
         $clientWrapper->getClientForBranch('default');
     }
 
@@ -464,6 +467,7 @@ class ClientWrapperTest extends TestCase
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage('Branch with ID "1" does not exist.');
+        $this->expectExceptionCode(404);
         $clientWrapper->getClientForBranch('1');
     }
 

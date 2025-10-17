@@ -40,11 +40,11 @@ class ClientWrapper
     public function getClientForBranch(string $branchId): BranchAwareClient
     {
         if (!ctype_digit($branchId)) {
-            throw new ClientException(sprintf('Branch ID must be a number. "%s" given.', $branchId));
+            throw new ClientException(sprintf('Branch ID must be a number. "%s" given.', $branchId), 400);
         }
         $this->resolveBranches();
         if (!isset($this->branches[$branchId])) {
-            throw new ClientException(sprintf('Branch with ID "%s" does not exist.', $branchId));
+            throw new ClientException(sprintf('Branch with ID "%s" does not exist.', $branchId), 404);
         }
         if (empty($this->branches[$branchId]->client)) {
             $branchClient = new BranchAwareClient(
@@ -156,7 +156,7 @@ class ClientWrapper
         }
 
         if (empty($this->defaultBranchId)) {
-            throw new ClientException(sprintf('Can not find default branch for branchId: "%s".', $branchId));
+            throw new ClientException(sprintf('Can not find default branch for branchId: "%s".', $branchId), 404);
         }
 
         if ($branchId === null || $branchId === 'default') {
@@ -166,7 +166,7 @@ class ClientWrapper
         }
 
         if (!isset($this->branches[$this->branchId])) {
-            throw new ClientException(sprintf('Can not resolve branchId: "%s".', $branchId));
+            throw new ClientException(sprintf('Can not resolve branchId: "%s".', $branchId), 404);
         }
     }
 }
