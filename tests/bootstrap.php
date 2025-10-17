@@ -36,7 +36,6 @@ try {
         $tokenInfo['owner']['id'],
         $client->getApiUrl(),
     ));
-
 } catch (ClientException $e) {
     throw new RuntimeException(
         sprintf('Failed to verify TEST_STORAGE_API_TOKEN "%s".', $e->getMessage()),
