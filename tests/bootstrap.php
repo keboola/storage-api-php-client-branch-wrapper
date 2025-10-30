@@ -28,6 +28,14 @@ $client = new Client(
 
 try {
     $tokenInfo = $client->verifyToken();
+    print(sprintf(
+        'Authorized as "%s (%s)" to project "%s (%s)" at "%s" stack.' . PHP_EOL,
+        $tokenInfo['description'],
+        $tokenInfo['id'],
+        $tokenInfo['owner']['name'],
+        $tokenInfo['owner']['id'],
+        $client->getApiUrl(),
+    ));
 } catch (ClientException $e) {
     throw new RuntimeException(
         sprintf('Failed to verify TEST_STORAGE_API_TOKEN "%s".', $e->getMessage()),
