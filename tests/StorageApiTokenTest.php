@@ -237,5 +237,4 @@ class StorageApiTokenTest extends TestCase
 
         self::assertNull($token->getSamlUserId());
     }
-
 }
