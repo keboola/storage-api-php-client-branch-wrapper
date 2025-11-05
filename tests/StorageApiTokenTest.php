@@ -18,6 +18,7 @@ class StorageApiTokenTest extends TestCase
                 'canManageBuckets' => true,
                 'canManageTokens' => false,
                 'canCreateJobs' => true,
+                'isBYODB' => true,
                 'owner' => [
                     'id' => '456',
                     'name' => 'my project',
@@ -58,6 +59,7 @@ class StorageApiTokenTest extends TestCase
         self::assertSame(['canManageBuckets', 'canCreateJobs'], $token->getPermissions());
         self::assertTrue($token->isAdminToken());
         self::assertSame('snowflake', $token->getProjectBackend());
+        self::assertTrue($token->isBYODB());
 
         self::assertSame(
             [
@@ -66,6 +68,7 @@ class StorageApiTokenTest extends TestCase
                 'canManageBuckets' => true,
                 'canManageTokens' => false,
                 'canCreateJobs' => true,
+                'isBYODB' => true,
                 'owner' => [
                     'id' => '456',
                     'name' => 'my project',
@@ -234,4 +237,5 @@ class StorageApiTokenTest extends TestCase
 
         self::assertNull($token->getSamlUserId());
     }
+
 }
