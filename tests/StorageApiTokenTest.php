@@ -18,7 +18,6 @@ class StorageApiTokenTest extends TestCase
                 'canManageBuckets' => true,
                 'canManageTokens' => false,
                 'canCreateJobs' => true,
-                'isBYODB' => true,
                 'owner' => [
                     'id' => '456',
                     'name' => 'my project',
@@ -28,6 +27,7 @@ class StorageApiTokenTest extends TestCase
                     ],
                     'fileStorageProvider' => 'aws',
                     'defaultBackend' => 'snowflake',
+                    'isBYODB' => true,
                 ],
                 'admin' => [
                     'samlParameters' => [
@@ -68,7 +68,6 @@ class StorageApiTokenTest extends TestCase
                 'canManageBuckets' => true,
                 'canManageTokens' => false,
                 'canCreateJobs' => true,
-                'isBYODB' => true,
                 'owner' => [
                     'id' => '456',
                     'name' => 'my project',
@@ -78,6 +77,7 @@ class StorageApiTokenTest extends TestCase
                     ],
                     'fileStorageProvider' => 'aws',
                     'defaultBackend' => 'snowflake',
+                    'isBYODB' => true,
                 ],
                 'admin' => [
                     'samlParameters' => [
