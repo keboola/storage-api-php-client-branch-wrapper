@@ -119,4 +119,9 @@ class StorageApiToken
     {
         return $this->tokenInfo['owner']['defaultBackend'];
     }
+
+    public function isBYODB(): bool
+    {
+        return (bool) $this->tokenInfo['owner']['isBYODB'];
+    }
 }
