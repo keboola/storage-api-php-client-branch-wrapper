@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\StorageApiBranch\Factory\StorageClientRequestFactory;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 class StorageClientRequestFactoryTest extends TestCase
 {
     private const TOKEN_HEADER = 'HTTP_X_STORAGEAPI_TOKEN';
+    private const AUTHORIZATION_HEADER = 'HTTP_AUTHORIZATION';
     private const RUN_ID_HEADER = 'HTTP_X_KBC_RUNID';
 
     /**
@@ -24,7 +26,9 @@ class StorageClientRequestFactoryTest extends TestCase
         $factory = new StorageClientRequestFactory(new ClientOptions());
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Storage API token must be supplied in X-StorageApi-Token header.');
+        $this->expectExceptionMessage(
+            'Storage API token must be supplied in "X-StorageApi-Token" or "Authorization: Bearer <token>" header.',
+        );
         $this->expectExceptionCode(401);
 
         $factory->createClientWrapper($request);
@@ -137,5 +141,45 @@ class StorageClientRequestFactoryTest extends TestCase
         $factory->createClientWrapper($request);
         self::assertNull($options->getToken());
         self::assertNull($factory->getClientOptionsReadOnly()->getToken());
+    }
+
+    public function testFactoryWithStorageApiTokenSetsNoAuthType(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::TOKEN_HEADER => $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        self::assertNull($clientWrapper->getClientOptionsReadOnly()->getAuthType());
+    }
+
+    public function testFactoryWithBearerTokenSetsAuthType(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::AUTHORIZATION_HEADER => 'Bearer ' . $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        self::assertSame(Client::AUTH_TYPE_BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        self::assertSame($_SERVER['TEST_STORAGE_API_TOKEN'], $clientWrapper->getClientOptionsReadOnly()->getToken());
+    }
+
+    public function testFactoryBearerTokenTakesPrecedence(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::TOKEN_HEADER => 'some-other-token',
+            self::AUTHORIZATION_HEADER => 'Bearer ' . $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        // Bearer token should take precedence
+        self::assertSame(Client::AUTH_TYPE_BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        self::assertSame($_SERVER['TEST_STORAGE_API_TOKEN'], $clientWrapper->getClientOptionsReadOnly()->getToken());
     }
 }

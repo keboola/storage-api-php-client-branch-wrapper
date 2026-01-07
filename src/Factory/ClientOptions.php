@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Factory;
 
 use Closure;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
@@ -29,6 +30,7 @@ class ClientOptions
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
+        private ?string $authType = null,
     ) {
         $this->setUrl($url); // call to validate URL
     }
@@ -45,6 +47,7 @@ class ClientOptions
             'awsDebug' => $this->getAwsDebug(),
             'logger' => $this->getLogger(),
             'jobPollRetryDelay' => $this->getJobPollRetryDelay(),
+            'authType' => $this->getAuthType(),
         ];
     }
 
@@ -64,6 +67,7 @@ class ClientOptions
         $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
         $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
         $this->useBranchStorage = $clientOptions->useBranchStorage() ?? $this->useBranchStorage;
+        $this->authType = $clientOptions->getAuthType() ?? $this->authType;
     }
 
     public function setUrl(?string $url): ClientOptions
@@ -226,5 +230,16 @@ class ClientOptions
     public function setRetryOnMaintenance(?bool $retryOnMaintenance): void
     {
         $this->retryOnMaintenance = $retryOnMaintenance;
+    }
+
+    public function getAuthType(): ?string
+    {
+        return $this->authType;
+    }
+
+    public function setAuthType(?string $authType): ClientOptions
+    {
+        $this->authType = $authType;
+        return $this;
     }
 }
