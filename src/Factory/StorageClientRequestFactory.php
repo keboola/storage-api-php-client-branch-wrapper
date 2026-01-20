@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Factory;
 
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,6 +13,8 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
 {
     public const TOKEN_HEADER = 'X-StorageApi-Token';
     public const RUN_ID_HEADER = 'X-KBC-RunId';
+    private const AUTHORIZATION_HEADER = 'Authorization';
+    private const BEARER_PREFIX = 'Bearer ';
 
     private ClientOptions $clientOptions;
 
@@ -21,18 +24,35 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         $this->clientOptions->addValuesFrom($clientOptions);
     }
 
-    private function getTokenFromRequest(Request $request): string
+    /**
+     * @return array{token: string, authType: string}
+     */
+    private function getTokenFromRequest(Request $request): array
     {
-        $token = (string) $request->headers->get(self::TOKEN_HEADER);
-
-        if ($token === '') {
-            throw new ClientException(
-                sprintf('Storage API token must be supplied in %s header.', self::TOKEN_HEADER),
-                401,
-            );
+        $authHeader = $request->headers->get(self::AUTHORIZATION_HEADER);
+        if ($authHeader !== null && str_starts_with($authHeader, self::BEARER_PREFIX)) {
+            return [
+                'token' => substr($authHeader, strlen(self::BEARER_PREFIX)),
+                'authType' => Client::AUTH_TYPE_BEARER,
+            ];
         }
 
-        return $token;
+        $token = (string) $request->headers->get(self::TOKEN_HEADER);
+        if ($token !== '') {
+            return [
+                'token' => $token,
+                'authType' => Client::AUTH_TYPE_STORAGE_TOKEN,
+            ];
+        }
+
+        throw new ClientException(
+            sprintf(
+                'Storage API token must be supplied in %s header or %s header.',
+                self::AUTHORIZATION_HEADER,
+                self::TOKEN_HEADER,
+            ),
+            401,
+        );
     }
 
     private function getRunId(Request $request, ClientOptions $options): string
@@ -56,7 +76,9 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
             $options->addValuesFrom($clientOptions);
         }
 
-        $options->setToken($this->getTokenFromRequest($request));
+        $tokenData = $this->getTokenFromRequest($request);
+        $options->setToken($tokenData['token']);
+        $options->setAuthType($tokenData['authType']);
         $options->setRunId($this->getRunId($request, $options));
 
         return new ClientWrapper($options);
