@@ -29,7 +29,7 @@ class ClientOptions
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
-        private ?string $authType = null,
+        private ?AuthType $authType = null,
     ) {
         $this->setUrl($url); // call to validate URL
     }
@@ -46,7 +46,7 @@ class ClientOptions
             'awsDebug' => $this->getAwsDebug(),
             'logger' => $this->getLogger(),
             'jobPollRetryDelay' => $this->getJobPollRetryDelay(),
-            'authType' => $this->getAuthType(),
+            'authType' => $this->getAuthType()?->value,
         ];
     }
 
@@ -231,12 +231,12 @@ class ClientOptions
         $this->retryOnMaintenance = $retryOnMaintenance;
     }
 
-    public function getAuthType(): ?string
+    public function getAuthType(): ?AuthType
     {
         return $this->authType;
     }
 
-    public function setAuthType(?string $authType): ClientOptions
+    public function setAuthType(?AuthType $authType): ClientOptions
     {
         $this->authType = $authType;
         return $this;

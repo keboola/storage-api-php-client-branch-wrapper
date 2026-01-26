@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Psr7\Response;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\StorageApiBranch\Factory\StorageClientRequestFactory;
 use PHPUnit\Framework\TestCase;
@@ -158,7 +154,7 @@ class StorageClientRequestFactoryTest extends TestCase
         $clientWrapper = $factory->createClientWrapper($request);
 
         self::assertSame($testToken, $clientWrapper->getClientOptionsReadOnly()->getToken());
-        self::assertSame(Client::AUTH_TYPE_BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
     }
 
     public function testFactoryWithStorageToken(): void
@@ -172,7 +168,7 @@ class StorageClientRequestFactoryTest extends TestCase
 
         self::assertSame($_SERVER['TEST_STORAGE_API_TOKEN'], $clientWrapper->getClientOptionsReadOnly()->getToken());
         self::assertSame(
-            Client::AUTH_TYPE_STORAGE_TOKEN,
+            AuthType::STORAGE_TOKEN,
             $clientWrapper->getClientOptionsReadOnly()->getAuthType(),
         );
     }
@@ -189,7 +185,7 @@ class StorageClientRequestFactoryTest extends TestCase
         $clientWrapper = $factory->createClientWrapper($request);
 
         self::assertSame($bearerToken, $clientWrapper->getClientOptionsReadOnly()->getToken());
-        self::assertSame(Client::AUTH_TYPE_BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
     }
 
     public function testFactoryWithInvalidAuthorizationHeader(): void
@@ -219,6 +215,6 @@ class StorageClientRequestFactoryTest extends TestCase
         $clientWrapper = $factory->createClientWrapper($request);
 
         self::assertSame('', $clientWrapper->getClientOptionsReadOnly()->getToken());
-        self::assertSame(Client::AUTH_TYPE_BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
     }
 }

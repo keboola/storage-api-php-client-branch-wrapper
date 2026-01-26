@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Factory;
 
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +24,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
     }
 
     /**
-     * @return array{token: string, authType: string}
+     * @return array{token: string, authType: AuthType}
      */
     private function getTokenFromRequest(Request $request): array
     {
@@ -33,7 +32,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         if ($authHeader !== null && str_starts_with($authHeader, self::BEARER_PREFIX)) {
             return [
                 'token' => substr($authHeader, strlen(self::BEARER_PREFIX)),
-                'authType' => Client::AUTH_TYPE_BEARER,
+                'authType' => AuthType::BEARER,
             ];
         }
 
@@ -41,7 +40,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         if ($token !== '') {
             return [
                 'token' => $token,
-                'authType' => Client::AUTH_TYPE_STORAGE_TOKEN,
+                'authType' => AuthType::STORAGE_TOKEN,
             ];
         }
 
