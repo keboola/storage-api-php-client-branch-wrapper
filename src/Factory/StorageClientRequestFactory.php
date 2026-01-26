@@ -23,30 +23,28 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         $this->clientOptions->addValuesFrom($clientOptions);
     }
 
-    /**
-     * @return array{token: string, authType: AuthType}
-     */
-    private function getTokenFromRequest(Request $request): array
+    private function getTokenFromRequest(Request $request): ClientOptions
     {
         $authHeader = $request->headers->get(self::AUTHORIZATION_HEADER);
         if ($authHeader !== null && str_starts_with($authHeader, self::BEARER_PREFIX)) {
-            return [
-                'token' => substr($authHeader, strlen(self::BEARER_PREFIX)),
-                'authType' => AuthType::BEARER,
-            ];
+            $token = substr($authHeader, strlen(self::BEARER_PREFIX));
+            if ($token === '') {
+                throw new ClientException(
+                    'Bearer token in Authorization header is empty.',
+                    401,
+                );
+            }
+            return new ClientOptions(token: $token, authType: AuthType::BEARER);
         }
 
         $token = (string) $request->headers->get(self::TOKEN_HEADER);
         if ($token !== '') {
-            return [
-                'token' => $token,
-                'authType' => AuthType::STORAGE_TOKEN,
-            ];
+            return new ClientOptions(token: $token, authType: AuthType::STORAGE_TOKEN);
         }
 
         throw new ClientException(
             sprintf(
-                'Storage API token must be supplied in %s header or %s header.',
+                'Token must be supplied via %s: Bearer header or %s header.',
                 self::AUTHORIZATION_HEADER,
                 self::TOKEN_HEADER,
             ),
@@ -75,9 +73,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
             $options->addValuesFrom($clientOptions);
         }
 
-        $tokenData = $this->getTokenFromRequest($request);
-        $options->setToken($tokenData['token']);
-        $options->setAuthType($tokenData['authType']);
+        $options->addValuesFrom($this->getTokenFromRequest($request));
         $options->setRunId($this->getRunId($request, $options));
 
         return new ClientWrapper($options);

@@ -27,7 +27,7 @@ class StorageClientRequestFactoryTest extends TestCase
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage(
-            'Storage API token must be supplied in Authorization header or X-StorageApi-Token header.',
+            'Token must be supplied via Authorization: Bearer header or X-StorageApi-Token header.',
         );
         $this->expectExceptionCode(401);
 
@@ -198,7 +198,7 @@ class StorageClientRequestFactoryTest extends TestCase
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage(
-            'Storage API token must be supplied in Authorization header or X-StorageApi-Token header.',
+            'Token must be supplied via Authorization: Bearer header or X-StorageApi-Token header.',
         );
         $this->expectExceptionCode(401);
 
@@ -211,10 +211,12 @@ class StorageClientRequestFactoryTest extends TestCase
             self::AUTHORIZATION_HEADER => 'Bearer ',
         ]);
 
-        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
-        $clientWrapper = $factory->createClientWrapper($request);
+        $factory = new StorageClientRequestFactory(new ClientOptions());
 
-        self::assertSame('', $clientWrapper->getClientOptionsReadOnly()->getToken());
-        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Bearer token in Authorization header is empty.');
+        $this->expectExceptionCode(401);
+
+        $factory->createClientWrapper($request);
     }
 }
