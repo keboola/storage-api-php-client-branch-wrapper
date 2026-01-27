@@ -254,6 +254,7 @@ class ClientOptionsTest extends TestCase
                 'awsDebug' => false,
                 'logger' => $logger,
                 'jobPollRetryDelay' => $retryFunction,
+                'authType' => null,
             ],
             $clientOptions->getClientConstructOptions(),
         );

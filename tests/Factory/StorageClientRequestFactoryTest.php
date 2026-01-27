@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\StorageApiBranch\Factory\StorageClientRequestFactory;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,7 @@ class StorageClientRequestFactoryTest extends TestCase
 {
     private const TOKEN_HEADER = 'HTTP_X_STORAGEAPI_TOKEN';
     private const RUN_ID_HEADER = 'HTTP_X_KBC_RUNID';
+    private const AUTHORIZATION_HEADER = 'HTTP_AUTHORIZATION';
 
     /**
      * @dataProvider provideEmptyTokenHeader
@@ -24,7 +26,9 @@ class StorageClientRequestFactoryTest extends TestCase
         $factory = new StorageClientRequestFactory(new ClientOptions());
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Storage API token must be supplied in X-StorageApi-Token header.');
+        $this->expectExceptionMessage(
+            'Token must be supplied via Authorization: Bearer header or X-StorageApi-Token header.',
+        );
         $this->expectExceptionCode(401);
 
         $factory->createClientWrapper($request);
@@ -137,5 +141,82 @@ class StorageClientRequestFactoryTest extends TestCase
         $factory->createClientWrapper($request);
         self::assertNull($options->getToken());
         self::assertNull($factory->getClientOptionsReadOnly()->getToken());
+    }
+
+    public function testFactoryWithBearerToken(): void
+    {
+        $testToken = 'test-bearer-token-12345';
+        $request = new Request([], [], [], [], [], [
+            self::AUTHORIZATION_HEADER => 'Bearer ' . $testToken,
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        self::assertSame($testToken, $clientWrapper->getClientOptionsReadOnly()->getToken());
+        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+    }
+
+    public function testFactoryWithStorageToken(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::TOKEN_HEADER => $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        self::assertSame($_SERVER['TEST_STORAGE_API_TOKEN'], $clientWrapper->getClientOptionsReadOnly()->getToken());
+        self::assertSame(
+            AuthType::STORAGE_TOKEN,
+            $clientWrapper->getClientOptionsReadOnly()->getAuthType(),
+        );
+    }
+
+    public function testFactoryBearerTokenHasPriorityOverStorageToken(): void
+    {
+        $bearerToken = 'bearer-token-12345';
+        $request = new Request([], [], [], [], [], [
+            self::AUTHORIZATION_HEADER => 'Bearer ' . $bearerToken,
+            self::TOKEN_HEADER => $_SERVER['TEST_STORAGE_API_TOKEN'],
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
+        $clientWrapper = $factory->createClientWrapper($request);
+
+        self::assertSame($bearerToken, $clientWrapper->getClientOptionsReadOnly()->getToken());
+        self::assertSame(AuthType::BEARER, $clientWrapper->getClientOptionsReadOnly()->getAuthType());
+    }
+
+    public function testFactoryWithInvalidAuthorizationHeader(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::AUTHORIZATION_HEADER => 'Basic sometoken',
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions());
+
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage(
+            'Token must be supplied via Authorization: Bearer header or X-StorageApi-Token header.',
+        );
+        $this->expectExceptionCode(401);
+
+        $factory->createClientWrapper($request);
+    }
+
+    public function testFactoryWithEmptyBearerToken(): void
+    {
+        $request = new Request([], [], [], [], [], [
+            self::AUTHORIZATION_HEADER => 'Bearer ',
+        ]);
+
+        $factory = new StorageClientRequestFactory(new ClientOptions());
+
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Bearer token in Authorization header is empty.');
+        $this->expectExceptionCode(401);
+
+        $factory->createClientWrapper($request);
     }
 }

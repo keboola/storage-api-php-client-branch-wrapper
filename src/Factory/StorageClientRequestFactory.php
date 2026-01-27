@@ -12,6 +12,8 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
 {
     public const TOKEN_HEADER = 'X-StorageApi-Token';
     public const RUN_ID_HEADER = 'X-KBC-RunId';
+    private const AUTHORIZATION_HEADER = 'Authorization';
+    private const BEARER_PREFIX = 'Bearer ';
 
     private ClientOptions $clientOptions;
 
@@ -21,18 +23,33 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
         $this->clientOptions->addValuesFrom($clientOptions);
     }
 
-    private function getTokenFromRequest(Request $request): string
+    private function getTokenFromRequest(Request $request): ClientOptions
     {
-        $token = (string) $request->headers->get(self::TOKEN_HEADER);
-
-        if ($token === '') {
-            throw new ClientException(
-                sprintf('Storage API token must be supplied in %s header.', self::TOKEN_HEADER),
-                401,
-            );
+        $authHeader = $request->headers->get(self::AUTHORIZATION_HEADER);
+        if ($authHeader !== null && str_starts_with($authHeader, self::BEARER_PREFIX)) {
+            $token = substr($authHeader, strlen(self::BEARER_PREFIX));
+            if ($token === '') {
+                throw new ClientException(
+                    'Bearer token in Authorization header is empty.',
+                    401,
+                );
+            }
+            return new ClientOptions(token: $token, authType: AuthType::BEARER);
         }
 
-        return $token;
+        $token = (string) $request->headers->get(self::TOKEN_HEADER);
+        if ($token !== '') {
+            return new ClientOptions(token: $token, authType: AuthType::STORAGE_TOKEN);
+        }
+
+        throw new ClientException(
+            sprintf(
+                'Token must be supplied via %s: Bearer header or %s header.',
+                self::AUTHORIZATION_HEADER,
+                self::TOKEN_HEADER,
+            ),
+            401,
+        );
     }
 
     private function getRunId(Request $request, ClientOptions $options): string
@@ -56,7 +73,7 @@ class StorageClientRequestFactory implements StorageClientFactoryInterface
             $options->addValuesFrom($clientOptions);
         }
 
-        $options->setToken($this->getTokenFromRequest($request));
+        $options->addValuesFrom($this->getTokenFromRequest($request));
         $options->setRunId($this->getRunId($request, $options));
 
         return new ClientWrapper($options);
