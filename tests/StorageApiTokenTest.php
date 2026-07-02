@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests;
 
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\StorageApiToken;
 use PHPUnit\Framework\TestCase;
 
@@ -236,5 +237,41 @@ class StorageApiTokenTest extends TestCase
         );
 
         self::assertNull($token->getSamlUserId());
+    }
+
+    public function testExplicitBearerTokenType(): void
+    {
+        $token = new StorageApiToken(['id' => '1'], 'oauth-value', AuthType::BEARER);
+
+        self::assertSame(AuthType::BEARER, $token->getTokenType());
+    }
+
+    public function testExplicitStorageTokenType(): void
+    {
+        $token = new StorageApiToken(['id' => '1'], 'legacy-value', AuthType::STORAGE_TOKEN);
+
+        self::assertSame(AuthType::STORAGE_TOKEN, $token->getTokenType());
+    }
+
+    public function testMissingTokenTypeDefaultsToStorageTokenAndTriggersDeprecation(): void
+    {
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+                return true;
+            },
+            E_USER_DEPRECATED,
+        );
+
+        try {
+            $token = new StorageApiToken(['id' => '1'], 'legacy-value');
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame(AuthType::STORAGE_TOKEN, $token->getTokenType());
+        self::assertCount(1, $deprecations);
+        self::assertStringContainsString('tokenType', $deprecations[0]);
     }
 }

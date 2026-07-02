@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\StorageApiBranch\Factory\StorageClientPlainFactory;
+use Keboola\StorageApiBranch\StorageApiToken;
 use PHPUnit\Framework\TestCase;
 
 class StorageClientPlainFactoryTest extends TestCase
@@ -35,5 +37,20 @@ class StorageClientPlainFactoryTest extends TestCase
         $factory->createClientWrapper(new ClientOptions(null, $_SERVER['TEST_STORAGE_API_TOKEN']));
         self::assertNull($options->getToken());
         self::assertNull($factory->getClientOptionsReadOnly()->getToken());
+    }
+
+    public function testCreateClientWrapperForTokenUsesTokenValueAndAuthType(): void
+    {
+        $factory = new StorageClientPlainFactory(new ClientOptions('http://foo'));
+        $token = new StorageApiToken(['id' => '1'], 'oauth-value', AuthType::BEARER);
+
+        $options = $factory
+            ->createClientWrapperForToken($token, new ClientOptions(branchId: '123'))
+            ->getClientOptionsReadOnly();
+
+        self::assertSame('oauth-value', $options->getToken());
+        self::assertSame(AuthType::BEARER, $options->getAuthType());
+        self::assertSame('123', $options->getBranchId());
+        self::assertSame('http://foo', $options->getUrl());
     }
 }
