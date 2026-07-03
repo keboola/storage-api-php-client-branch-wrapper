@@ -8,6 +8,7 @@ use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\DevBranches;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 
 class ClientWrapper
@@ -130,6 +131,7 @@ class ClientWrapper
             $this->storageToken = new StorageApiToken(
                 $this->getBranchClient()->verifyToken(),
                 $this->getBranchClient()->getTokenString(),
+                $this->clientOptions->getAuthType() ?? AuthType::STORAGE_TOKEN,
             );
         }
         return $this->storageToken;

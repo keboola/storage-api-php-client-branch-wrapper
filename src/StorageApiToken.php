@@ -4,14 +4,41 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch;
 
+use Keboola\StorageApiBranch\Factory\AuthType;
 use SensitiveParameter;
+use function trigger_deprecation;
 
 class StorageApiToken
 {
+    private readonly AuthType $tokenType;
+
     public function __construct(
         private readonly array $tokenInfo,
         #[SensitiveParameter] private readonly string $tokenValue,
+        ?AuthType $tokenType = null,
     ) {
+        if ($tokenType === null) {
+            trigger_deprecation(
+                'keboola/storage-api-php-client-branch-wrapper',
+                '6.8',
+                'Constructing %s without the $tokenType argument is deprecated; it will be required in 7.0. '
+                . 'Pass AuthType::STORAGE_TOKEN explicitly for legacy Storage tokens.',
+                self::class,
+            );
+            $tokenType = AuthType::STORAGE_TOKEN;
+        }
+
+        $this->tokenType = $tokenType;
+    }
+
+    /**
+     * Auth scheme the token authenticates with: {@see AuthType::STORAGE_TOKEN} (sent as the
+     * X-StorageApi-Token header) or {@see AuthType::BEARER} (sent as an Authorization: Bearer
+     * header, e.g. OAuth tokens). Lets callers build a Storage client with the matching scheme.
+     */
+    public function getTokenType(): AuthType
+    {
+        return $this->tokenType;
     }
 
     public function getTokenInfo(): array
