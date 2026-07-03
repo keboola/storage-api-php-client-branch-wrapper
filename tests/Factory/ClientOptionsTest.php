@@ -6,6 +6,7 @@ namespace Keboola\StorageApiBranch\Tests\Factory;
 
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -242,6 +243,7 @@ class ClientOptionsTest extends TestCase
             $backendConfiguration,
             false,
             false,
+            AuthType::STORAGE_TOKEN,
         );
         self::assertEquals(
             [
@@ -254,9 +256,79 @@ class ClientOptionsTest extends TestCase
                 'awsDebug' => false,
                 'logger' => $logger,
                 'jobPollRetryDelay' => $retryFunction,
-                'authType' => null,
+                'authType' => AuthType::STORAGE_TOKEN->value,
             ],
             $clientOptions->getClientConstructOptions(),
         );
+    }
+
+    public function testGetClientConstructOptionsWithoutAuthTypeTriggersDeprecation(): void
+    {
+        $clientOptions = new ClientOptions(url: 'http://dummy', token: 'token');
+
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+                return true;
+            },
+            E_USER_DEPRECATED,
+        );
+
+        try {
+            $constructOptions = $clientOptions->getClientConstructOptions();
+        } finally {
+            restore_error_handler();
+        }
+
+        // legacy default preserved: a null authType lets the Client fall back to the Storage token
+        self::assertNull($constructOptions['authType']);
+        self::assertCount(1, $deprecations);
+        self::assertStringContainsString('authType', $deprecations[0]);
+    }
+
+    public function testGetClientConstructOptionsWithAuthTypeDoesNotTriggerDeprecation(): void
+    {
+        $clientOptions = new ClientOptions(url: 'http://dummy', token: 'token', authType: AuthType::BEARER);
+
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+                return true;
+            },
+            E_USER_DEPRECATED,
+        );
+
+        try {
+            $constructOptions = $clientOptions->getClientConstructOptions();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame(AuthType::BEARER->value, $constructOptions['authType']);
+        self::assertCount(0, $deprecations);
+    }
+
+    public function testGetClientConstructOptionsWithoutTokenDoesNotTriggerDeprecation(): void
+    {
+        $clientOptions = new ClientOptions(url: 'http://dummy');
+
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+                return true;
+            },
+            E_USER_DEPRECATED,
+        );
+
+        try {
+            $clientOptions->getClientConstructOptions();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertCount(0, $deprecations);
     }
 }
