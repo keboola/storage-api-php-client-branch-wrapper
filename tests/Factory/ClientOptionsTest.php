@@ -17,9 +17,6 @@ class ClientOptionsTest extends TestCase
     {
         $retryFunction = function () {
         };
-        $runIdGenerator = function (ClientOptions $clientOptions) {
-            return 'boo' . $clientOptions->getToken();
-        };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $clientOptions = new ClientOptions(
@@ -33,7 +30,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdGenerator,
             $backendConfiguration,
             true,
             false,
@@ -49,8 +45,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(24, $clientOptions->getAwsRetries());
         self::assertSame(false, $clientOptions->getAwsDebug());
         self::assertSame($retryFunction, $clientOptions->getJobPollRetryDelay());
-        self::assertSame($runIdGenerator, $clientOptions->getRunIdGenerator());
-        self::assertSame('bootoken', $clientOptions->getRunIdGenerator()($clientOptions));
         self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
         self::assertSame(true, $clientOptions->useBranchStorage());
         self::assertFalse($clientOptions->getRetryOnMaintenance());
@@ -59,8 +53,6 @@ class ClientOptionsTest extends TestCase
     public function testAccessors(): void
     {
         $retryFunction = function () {
-        };
-        $runIdFunction = function () {
         };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
@@ -90,7 +82,6 @@ class ClientOptionsTest extends TestCase
         $clientOptions->setAwsRetries(24);
         $clientOptions->setAwsDebug(false);
         $clientOptions->setJobPollRetryDelay($retryFunction);
-        $clientOptions->setRunIdGenerator($runIdFunction);
         $clientOptions->setBackendConfiguration($backendConfiguration);
         $clientOptions->setUseBranchStorage(true);
         $clientOptions->setRetryOnMaintenance(true);
@@ -105,7 +96,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(24, $clientOptions->getAwsRetries());
         self::assertSame(false, $clientOptions->getAwsDebug());
         self::assertEquals($retryFunction, $clientOptions->getJobPollRetryDelay());
-        self::assertSame($runIdFunction, $clientOptions->getRunIdGenerator());
         self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
         self::assertSame(true, $clientOptions->useBranchStorage());
         self::assertTrue($clientOptions->getRetryOnMaintenance());
@@ -132,13 +122,9 @@ class ClientOptionsTest extends TestCase
     {
         $retryFunction = function () {
         };
-        $runIdFunction = function () {
-        };
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $logger = new NullLogger();
         $retryFunction2 = function () {
-        };
-        $runIdFunction2 = function () {
         };
         $backendConfiguration2 = new BackendConfiguration('123-transformation', 'small');
         $clientOptions1 = new ClientOptions(
@@ -152,7 +138,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdFunction,
             $backendConfiguration,
             false,
             false,
@@ -168,7 +153,6 @@ class ClientOptionsTest extends TestCase
             242,
             true,
             $retryFunction2,
-            $runIdFunction2,
             $backendConfiguration2,
             true,
             true,
@@ -184,25 +168,11 @@ class ClientOptionsTest extends TestCase
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
         self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
         self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
         self::assertSame(true, $clientOptions1->useBranchStorage());
         self::assertTrue($clientOptions1->getRetryOnMaintenance());
 
-        $clientOptions3 = new ClientOptions(
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        );
+        $clientOptions3 = new ClientOptions();
         $clientOptions1->addValuesFrom($clientOptions3);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
         self::assertSame('token2', $clientOptions1->getToken());
@@ -214,7 +184,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
         self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
         self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
         self::assertSame(true, $clientOptions1->useBranchStorage());
         self::assertTrue($clientOptions1->getRetryOnMaintenance());
@@ -223,8 +192,6 @@ class ClientOptionsTest extends TestCase
     public function testGetClientConstructOptions(): void
     {
         $retryFunction = function () {
-        };
-        $runIdFunction = function () {
         };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
@@ -239,7 +206,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdFunction,
             $backendConfiguration,
             false,
             false,

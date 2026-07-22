@@ -26,7 +26,6 @@ class ClientOptions
         private ?int $awsRetries = null,
         private ?bool $awsDebug = null,
         private ?Closure $jobPollRetryDelay = null,
-        private ?Closure $runIdGenerator = null,
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
@@ -74,7 +73,6 @@ class ClientOptions
         $this->awsRetries = $clientOptions->getAwsRetries() ?? $this->awsRetries;
         $this->awsDebug = $clientOptions->getAwsDebug() ?? $this->awsDebug;
         $this->jobPollRetryDelay = $clientOptions->getJobPollRetryDelay() ?? $this->jobPollRetryDelay;
-        $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
         $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
         $this->useBranchStorage = $clientOptions->useBranchStorage() ?? $this->useBranchStorage;
         $this->authType = $clientOptions->getAuthType() ?? $this->authType;
@@ -197,17 +195,6 @@ class ClientOptions
     public function getBranchId(): ?string
     {
         return $this->branchId;
-    }
-
-    public function setRunIdGenerator(?Closure $runIdGenerator): ClientOptions
-    {
-        $this->runIdGenerator = $runIdGenerator;
-        return $this;
-    }
-
-    public function getRunIdGenerator(): ?Closure
-    {
-        return $this->runIdGenerator;
     }
 
     public function setBackendConfiguration(?BackendConfiguration $backendConfiguration): ClientOptions
