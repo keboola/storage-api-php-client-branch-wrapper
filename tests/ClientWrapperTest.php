@@ -13,7 +13,6 @@ use Keboola\StorageApi\Options\BackendConfiguration;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
-use LogicException;
 use PHPUnit\Framework\TestCase;
 
 class ClientWrapperTest extends TestCase
