@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Factory;
 
 use Closure;
+use InvalidArgumentException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
 use SensitiveParameter;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\Validator\Validation;
-use function trigger_deprecation;
 
 class ClientOptions
 {
@@ -37,12 +37,9 @@ class ClientOptions
     public function getClientConstructOptions(): array
     {
         if ($this->token !== null && $this->authType === null) {
-            trigger_deprecation(
-                'keboola/storage-api-php-client-branch-wrapper',
-                '6.8',
-                'Building a Storage client from ClientOptions with a token but without an authType is '
-                . 'deprecated; it will be required in 7.0. Set authType explicitly (AuthType::STORAGE_TOKEN '
-                . 'for legacy Storage tokens, AuthType::BEARER for OAuth bearer tokens).',
+            throw new InvalidArgumentException(
+                'A Storage client requires an authType when a token is set. Set authType explicitly '
+                . '(AuthType::STORAGE_TOKEN for legacy Storage tokens, AuthType::BEARER for OAuth bearer tokens).',
             );
         }
 
