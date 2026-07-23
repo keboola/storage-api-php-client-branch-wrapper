@@ -7,6 +7,7 @@ namespace Keboola\StorageApiBranch\Tests;
 use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\StorageApiToken;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class StorageApiTokenTest extends TestCase
 {
@@ -40,6 +41,7 @@ class StorageApiTokenTest extends TestCase
                 'componentAccess' => ['keboola.component'],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertSame('123', $token->getTokenId());
@@ -92,7 +94,7 @@ class StorageApiTokenTest extends TestCase
             $token->getTokenInfo(),
         );
 
-        $token = new StorageApiToken([], 'tokenValue');
+        $token = new StorageApiToken([], 'tokenValue', AuthType::STORAGE_TOKEN);
         self::assertFalse($token->isAdminToken());
     }
 
@@ -122,6 +124,7 @@ class StorageApiTokenTest extends TestCase
                 ],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertSame(['canCreateJobs', 'canManageBuckets'], $token->getPermissions());
@@ -143,6 +146,7 @@ class StorageApiTokenTest extends TestCase
                 ],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertSame(0.0, $token->getPayAsYouGoPurchasedCredits());
@@ -172,6 +176,7 @@ class StorageApiTokenTest extends TestCase
                 ],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertNull($token->getRole());
@@ -191,6 +196,7 @@ class StorageApiTokenTest extends TestCase
                 'componentAccess' => [],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertSame([], $token->getAllowedComponents());
@@ -208,6 +214,7 @@ class StorageApiTokenTest extends TestCase
                 ],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertSame(null, $token->getAllowedComponents());
@@ -234,6 +241,7 @@ class StorageApiTokenTest extends TestCase
                 ],
             ],
             'tokenValue',
+            AuthType::STORAGE_TOKEN,
         );
 
         self::assertNull($token->getSamlUserId());
@@ -253,25 +261,12 @@ class StorageApiTokenTest extends TestCase
         self::assertSame(AuthType::STORAGE_TOKEN, $token->getTokenType());
     }
 
-    public function testMissingTokenTypeDefaultsToStorageTokenAndTriggersDeprecation(): void
+    public function testTokenTypeConstructorArgumentIsRequired(): void
     {
-        $deprecations = [];
-        set_error_handler(
-            static function (int $errno, string $errstr) use (&$deprecations): bool {
-                $deprecations[] = $errstr;
-                return true;
-            },
-            E_USER_DEPRECATED,
-        );
+        $constructor = (new ReflectionClass(StorageApiToken::class))->getConstructor();
+        self::assertNotNull($constructor);
 
-        try {
-            $token = new StorageApiToken(['id' => '1'], 'legacy-value');
-        } finally {
-            restore_error_handler();
-        }
-
-        self::assertSame(AuthType::STORAGE_TOKEN, $token->getTokenType());
-        self::assertCount(1, $deprecations);
-        self::assertStringContainsString('tokenType', $deprecations[0]);
+        self::assertSame(3, $constructor->getNumberOfParameters());
+        self::assertSame(3, $constructor->getNumberOfRequiredParameters());
     }
 }

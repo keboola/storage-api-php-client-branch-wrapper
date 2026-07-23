@@ -6,29 +6,14 @@ namespace Keboola\StorageApiBranch;
 
 use Keboola\StorageApiBranch\Factory\AuthType;
 use SensitiveParameter;
-use function trigger_deprecation;
 
 class StorageApiToken
 {
-    private readonly AuthType $tokenType;
-
     public function __construct(
         private readonly array $tokenInfo,
         #[SensitiveParameter] private readonly string $tokenValue,
-        ?AuthType $tokenType = null,
+        private readonly AuthType $tokenType,
     ) {
-        if ($tokenType === null) {
-            trigger_deprecation(
-                'keboola/storage-api-php-client-branch-wrapper',
-                '6.8',
-                'Constructing %s without the $tokenType argument is deprecated; it will be required in 7.0. '
-                . 'Pass AuthType::STORAGE_TOKEN explicitly for legacy Storage tokens.',
-                self::class,
-            );
-            $tokenType = AuthType::STORAGE_TOKEN;
-        }
-
-        $this->tokenType = $tokenType;
     }
 
     /**

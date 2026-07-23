@@ -23,7 +23,9 @@ class StorageClientPlainFactoryTest extends TestCase
     public function testFactoryCreatesWorkingClient(): void
     {
         $factory = new StorageClientPlainFactory(new ClientOptions($_SERVER['TEST_STORAGE_API_URL']));
-        $clientWrapper = $factory->createClientWrapper(new ClientOptions(null, $_SERVER['TEST_STORAGE_API_TOKEN']));
+        $clientWrapper = $factory->createClientWrapper(
+            new ClientOptions(null, $_SERVER['TEST_STORAGE_API_TOKEN'], authType: AuthType::STORAGE_TOKEN),
+        );
         $tokenInfo = $clientWrapper->getBasicClient()->verifyToken();
 
         self::assertArrayHasKey('owner', $tokenInfo);

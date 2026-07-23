@@ -17,8 +17,6 @@ $branchClient = $clietnWrapper->getBranchClient();
 ```
 
 Client options refer to the options of the [Storage API Client constructor](https://github.com/keboola/storage-api-php-client/blob/b4cef10b1018d5b4cac06c9d541e790930fa437a/src/Keboola/StorageApi/Client.php#L102).
-Except for the `runIdGenerator` option which defines a callback used to generate `runId` when none is provided in 
-request (applicable for `StorageClientRequestFactory`).
 
 ## Development
 

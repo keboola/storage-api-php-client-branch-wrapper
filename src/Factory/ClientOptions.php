@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Keboola\StorageApiBranch\Factory;
 
 use Closure;
+use InvalidArgumentException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Psr\Log\LoggerInterface;
 use SensitiveParameter;
 use Symfony\Component\Validator\Constraints\Url;
 use Symfony\Component\Validator\Validation;
-use function trigger_deprecation;
 
 class ClientOptions
 {
@@ -26,7 +26,6 @@ class ClientOptions
         private ?int $awsRetries = null,
         private ?bool $awsDebug = null,
         private ?Closure $jobPollRetryDelay = null,
-        private ?Closure $runIdGenerator = null,
         private ?BackendConfiguration $backendConfiguration = null,
         private ?bool $useBranchStorage = null,
         private ?bool $retryOnMaintenance = null,
@@ -38,12 +37,9 @@ class ClientOptions
     public function getClientConstructOptions(): array
     {
         if ($this->token !== null && $this->authType === null) {
-            trigger_deprecation(
-                'keboola/storage-api-php-client-branch-wrapper',
-                '6.8',
-                'Building a Storage client from ClientOptions with a token but without an authType is '
-                . 'deprecated; it will be required in 7.0. Set authType explicitly (AuthType::STORAGE_TOKEN '
-                . 'for legacy Storage tokens, AuthType::BEARER for OAuth bearer tokens).',
+            throw new InvalidArgumentException(
+                'A Storage client requires an authType when a token is set. Set authType explicitly '
+                . '(AuthType::STORAGE_TOKEN for legacy Storage tokens, AuthType::BEARER for OAuth bearer tokens).',
             );
         }
 
@@ -74,7 +70,6 @@ class ClientOptions
         $this->awsRetries = $clientOptions->getAwsRetries() ?? $this->awsRetries;
         $this->awsDebug = $clientOptions->getAwsDebug() ?? $this->awsDebug;
         $this->jobPollRetryDelay = $clientOptions->getJobPollRetryDelay() ?? $this->jobPollRetryDelay;
-        $this->runIdGenerator = $clientOptions->getRunIdGenerator() ?? $this->runIdGenerator;
         $this->backendConfiguration = $clientOptions->getBackendConfiguration() ?? $this->backendConfiguration;
         $this->useBranchStorage = $clientOptions->useBranchStorage() ?? $this->useBranchStorage;
         $this->authType = $clientOptions->getAuthType() ?? $this->authType;
@@ -197,17 +192,6 @@ class ClientOptions
     public function getBranchId(): ?string
     {
         return $this->branchId;
-    }
-
-    public function setRunIdGenerator(?Closure $runIdGenerator): ClientOptions
-    {
-        $this->runIdGenerator = $runIdGenerator;
-        return $this;
-    }
-
-    public function getRunIdGenerator(): ?Closure
-    {
-        return $this->runIdGenerator;
     }
 
     public function setBackendConfiguration(?BackendConfiguration $backendConfiguration): ClientOptions

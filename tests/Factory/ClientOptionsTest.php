@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\StorageApiBranch\Tests\Factory;
 
+use InvalidArgumentException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\BackendConfiguration;
 use Keboola\StorageApiBranch\Factory\AuthType;
@@ -16,9 +17,6 @@ class ClientOptionsTest extends TestCase
     public function testConstructor(): void
     {
         $retryFunction = function () {
-        };
-        $runIdGenerator = function (ClientOptions $clientOptions) {
-            return 'boo' . $clientOptions->getToken();
         };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
@@ -33,7 +31,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdGenerator,
             $backendConfiguration,
             true,
             false,
@@ -49,8 +46,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(24, $clientOptions->getAwsRetries());
         self::assertSame(false, $clientOptions->getAwsDebug());
         self::assertSame($retryFunction, $clientOptions->getJobPollRetryDelay());
-        self::assertSame($runIdGenerator, $clientOptions->getRunIdGenerator());
-        self::assertSame('bootoken', $clientOptions->getRunIdGenerator()($clientOptions));
         self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
         self::assertSame(true, $clientOptions->useBranchStorage());
         self::assertFalse($clientOptions->getRetryOnMaintenance());
@@ -59,8 +54,6 @@ class ClientOptionsTest extends TestCase
     public function testAccessors(): void
     {
         $retryFunction = function () {
-        };
-        $runIdFunction = function () {
         };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
@@ -90,7 +83,6 @@ class ClientOptionsTest extends TestCase
         $clientOptions->setAwsRetries(24);
         $clientOptions->setAwsDebug(false);
         $clientOptions->setJobPollRetryDelay($retryFunction);
-        $clientOptions->setRunIdGenerator($runIdFunction);
         $clientOptions->setBackendConfiguration($backendConfiguration);
         $clientOptions->setUseBranchStorage(true);
         $clientOptions->setRetryOnMaintenance(true);
@@ -105,7 +97,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(24, $clientOptions->getAwsRetries());
         self::assertSame(false, $clientOptions->getAwsDebug());
         self::assertEquals($retryFunction, $clientOptions->getJobPollRetryDelay());
-        self::assertSame($runIdFunction, $clientOptions->getRunIdGenerator());
         self::assertSame($backendConfiguration, $clientOptions->getBackendConfiguration());
         self::assertSame(true, $clientOptions->useBranchStorage());
         self::assertTrue($clientOptions->getRetryOnMaintenance());
@@ -132,13 +123,9 @@ class ClientOptionsTest extends TestCase
     {
         $retryFunction = function () {
         };
-        $runIdFunction = function () {
-        };
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
         $logger = new NullLogger();
         $retryFunction2 = function () {
-        };
-        $runIdFunction2 = function () {
         };
         $backendConfiguration2 = new BackendConfiguration('123-transformation', 'small');
         $clientOptions1 = new ClientOptions(
@@ -152,7 +139,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdFunction,
             $backendConfiguration,
             false,
             false,
@@ -168,7 +154,6 @@ class ClientOptionsTest extends TestCase
             242,
             true,
             $retryFunction2,
-            $runIdFunction2,
             $backendConfiguration2,
             true,
             true,
@@ -184,25 +169,11 @@ class ClientOptionsTest extends TestCase
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
         self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
         self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
         self::assertSame(true, $clientOptions1->useBranchStorage());
         self::assertTrue($clientOptions1->getRetryOnMaintenance());
 
-        $clientOptions3 = new ClientOptions(
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        );
+        $clientOptions3 = new ClientOptions();
         $clientOptions1->addValuesFrom($clientOptions3);
         self::assertSame('http://dummy2', $clientOptions1->getUrl());
         self::assertSame('token2', $clientOptions1->getToken());
@@ -214,7 +185,6 @@ class ClientOptionsTest extends TestCase
         self::assertSame(242, $clientOptions1->getAwsRetries());
         self::assertSame(true, $clientOptions1->getAwsDebug());
         self::assertSame($retryFunction2, $clientOptions1->getJobPollRetryDelay());
-        self::assertSame($runIdFunction2, $clientOptions1->getRunIdGenerator());
         self::assertSame($backendConfiguration2, $clientOptions1->getBackendConfiguration());
         self::assertSame(true, $clientOptions1->useBranchStorage());
         self::assertTrue($clientOptions1->getRetryOnMaintenance());
@@ -223,8 +193,6 @@ class ClientOptionsTest extends TestCase
     public function testGetClientConstructOptions(): void
     {
         $retryFunction = function () {
-        };
-        $runIdFunction = function () {
         };
         $logger = new NullLogger();
         $backendConfiguration = new BackendConfiguration('123-transformation', 'small');
@@ -239,7 +207,6 @@ class ClientOptionsTest extends TestCase
             24,
             false,
             $retryFunction,
-            $runIdFunction,
             $backendConfiguration,
             false,
             false,
@@ -262,73 +229,31 @@ class ClientOptionsTest extends TestCase
         );
     }
 
-    public function testGetClientConstructOptionsWithoutAuthTypeTriggersDeprecation(): void
+    public function testGetClientConstructOptionsWithoutAuthTypeThrows(): void
     {
         $clientOptions = new ClientOptions(url: 'http://dummy', token: 'token');
 
-        $deprecations = [];
-        set_error_handler(
-            static function (int $errno, string $errstr) use (&$deprecations): bool {
-                $deprecations[] = $errstr;
-                return true;
-            },
-            E_USER_DEPRECATED,
-        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('A Storage client requires an authType when a token is set.');
 
-        try {
-            $constructOptions = $clientOptions->getClientConstructOptions();
-        } finally {
-            restore_error_handler();
-        }
-
-        // legacy default preserved: a null authType lets the Client fall back to the Storage token
-        self::assertNull($constructOptions['authType']);
-        self::assertCount(1, $deprecations);
-        self::assertStringContainsString('authType', $deprecations[0]);
+        $clientOptions->getClientConstructOptions();
     }
 
-    public function testGetClientConstructOptionsWithAuthTypeDoesNotTriggerDeprecation(): void
+    public function testGetClientConstructOptionsWithAuthTypeReturnsAuthType(): void
     {
         $clientOptions = new ClientOptions(url: 'http://dummy', token: 'token', authType: AuthType::BEARER);
 
-        $deprecations = [];
-        set_error_handler(
-            static function (int $errno, string $errstr) use (&$deprecations): bool {
-                $deprecations[] = $errstr;
-                return true;
-            },
-            E_USER_DEPRECATED,
-        );
-
-        try {
-            $constructOptions = $clientOptions->getClientConstructOptions();
-        } finally {
-            restore_error_handler();
-        }
+        $constructOptions = $clientOptions->getClientConstructOptions();
 
         self::assertSame(AuthType::BEARER->value, $constructOptions['authType']);
-        self::assertCount(0, $deprecations);
     }
 
-    public function testGetClientConstructOptionsWithoutTokenDoesNotTriggerDeprecation(): void
+    public function testGetClientConstructOptionsWithoutTokenDoesNotThrow(): void
     {
         $clientOptions = new ClientOptions(url: 'http://dummy');
 
-        $deprecations = [];
-        set_error_handler(
-            static function (int $errno, string $errstr) use (&$deprecations): bool {
-                $deprecations[] = $errstr;
-                return true;
-            },
-            E_USER_DEPRECATED,
-        );
+        $constructOptions = $clientOptions->getClientConstructOptions();
 
-        try {
-            $clientOptions->getClientConstructOptions();
-        } finally {
-            restore_error_handler();
-        }
-
-        self::assertCount(0, $deprecations);
+        self::assertNull($constructOptions['authType']);
     }
 }
