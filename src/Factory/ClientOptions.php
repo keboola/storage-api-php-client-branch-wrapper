@@ -79,7 +79,10 @@ class ClientOptions
     {
         if ($url !== null) {
             $validator = Validation::createValidator();
-            $errors = $validator->validate($url, [new Url(['message' => 'Storage API URL is not valid.'])]);
+            $errors = $validator->validate(
+                $url,
+                [new Url(message: 'Storage API URL is not valid.', requireTld: false)],
+            );
             if ($errors->count() !== 0) {
                 throw new ClientException(
                     'Value "' . $errors->get(0)->getInvalidValue() . '" is invalid: ' . $errors->get(0)->getMessage(),
