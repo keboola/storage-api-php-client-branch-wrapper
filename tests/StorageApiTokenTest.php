@@ -247,6 +247,21 @@ class StorageApiTokenTest extends TestCase
         self::assertNull($token->getSamlUserId());
     }
 
+    public function testOrganizationId(): void
+    {
+        $token = new StorageApiToken(['organization' => ['id' => 135]], 'tokenValue', AuthType::STORAGE_TOKEN);
+        self::assertSame('135', $token->getOrganizationId());
+
+        $token = new StorageApiToken(['organization' => ['id' => '135']], 'tokenValue', AuthType::STORAGE_TOKEN);
+        self::assertSame('135', $token->getOrganizationId());
+    }
+
+    public function testOrganizationIdNotSet(): void
+    {
+        $token = new StorageApiToken([], 'tokenValue', AuthType::STORAGE_TOKEN);
+        self::assertNull($token->getOrganizationId());
+    }
+
     public function testExplicitBearerTokenType(): void
     {
         $token = new StorageApiToken(['id' => '1'], 'oauth-value', AuthType::BEARER);

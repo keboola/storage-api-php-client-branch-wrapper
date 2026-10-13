@@ -41,6 +41,15 @@ class StorageApiToken
         return (string) $this->tokenInfo['owner']['id'];
     }
 
+    /**
+     * Organization of the token's project, or null when the token detail does not carry one.
+     */
+    public function getOrganizationId(): ?string
+    {
+        $organizationId = $this->tokenInfo['organization']['id'] ?? null;
+        return ($organizationId !== null) ? (string) $organizationId : null;
+    }
+
     public function getTokenId(): string
     {
         return (string) $this->tokenInfo['id'];
